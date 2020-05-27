@@ -2,6 +2,7 @@ module Cards exposing
     ( Suit(..), Face(..), Card(..)
     , new, defaultNew
     , viewCard, defaultFace
+    , viewCard2
     )
 
 {-| Card datatypes and views
@@ -24,6 +25,11 @@ Use these for defining card-specifc game logic or for displaying specific cards.
 @docs viewCard, defaultFace
 
 -}
+
+import Html exposing (Html)
+import Html.Attributes as HA
+import Html.Entity
+import Json.Encode as JE
 
 
 {-| A playing card suit type.
@@ -155,6 +161,49 @@ defaultFace face =
             13
 
 
+faceStr : Face -> String
+faceStr face =
+    case face of
+        Ace ->
+            "A"
+
+        Two ->
+            "2"
+
+        Three ->
+            "3"
+
+        Four ->
+            "4"
+
+        Five ->
+            "5"
+
+        Six ->
+            "6"
+
+        Seven ->
+            "7"
+
+        Eight ->
+            "8"
+
+        Nine ->
+            "9"
+
+        Ten ->
+            "10"
+
+        Jack ->
+            "J"
+
+        Queen ->
+            "Q"
+
+        King ->
+            "K"
+
+
 {-| A playing card type.
 
 Can either hold a card of suit and face, or a blank card.
@@ -276,6 +325,37 @@ viewCard card =
 
         Back ->
             ( "black", String.fromChar <| Char.fromCode 0x0001F0A0 )
+
+
+viewCard2 : Card -> Html msg
+viewCard2 card =
+    let
+        ( suite, face, suitesEnyity ) =
+            case card of
+                Card Spades value ->
+                    ( "spades", faceStr value, Html.Entity.spades )
+
+                Card Diamonds value ->
+                    ( "diams", faceStr value, Html.Entity.diams )
+
+                Card Clubs value ->
+                    ( "clubs", faceStr value, Html.Entity.clubs )
+
+                Card Hearts value ->
+                    ( "hearts", faceStr value, Html.Entity.hearts )
+
+                Back ->
+                    ( "back", "", Html.Entity.nbsp )
+    in
+    Html.div [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
+        [ Html.span [ HA.class "rank" ] [ Html.text face ]
+        , Html.span [ HA.class "suit" ]
+            [ Html.text suitesEnyity ]
+        ]
+
+
+setInnerHTML str =
+    HA.property "innerHTML" (JE.string str)
 
 
 viewFace : Int -> Face -> String

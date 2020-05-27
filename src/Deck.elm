@@ -68,7 +68,7 @@ fullFace face =
 -}
 newDeck : List Card -> ShuffledDeck
 newDeck cardList =
-    ShuffledDeck <| Deck cardList
+    ShuffledDeck (Deck cardList)
 
 
 {-| A full 52-card deck in standard order.

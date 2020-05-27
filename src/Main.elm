@@ -1,9 +1,11 @@
 module Main exposing (..)
 
 import Browser
-import Deck
-import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Cards
+import Deck exposing (Deck)
+import Html exposing (Html)
+import Html.Attributes as HA
+import Random
 
 
 
@@ -11,12 +13,14 @@ import Html.Attributes exposing (src)
 
 
 type alias Model =
-    {}
+    { deck : Deck.ShuffledDeck }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    ( { deck = Deck.fullDeck }
+    , Random.generate ShuffleDeck Deck.randomDeck
+    )
 
 
 
@@ -24,12 +28,15 @@ init =
 
 
 type Msg
-    = NoOp
+    = ShuffleDeck Deck.ShuffledDeck
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        ShuffleDeck shuffledDeckDeck ->
+            ( Model shuffledDeckDeck, Cmd.none )
+                |> Debug.log "mcmd"
 
 
 
@@ -38,13 +45,26 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Your Elm App is working!" ]
+    let
+        cards =
+            Deck.getCards model.deck
+                |> Debug.log "md"
+    in
+    Html.div []
+        [ Html.h1 []
+            [ Html.text "String.String" ]
+        , Html.div
+            [ HA.class "playingCards faceImages rotateHand hand"
+            ]
+            (List.map Cards.viewCard2 (List.take 10 cards))
         ]
 
 
 
+-- (case model.deck of
+--     Deck.ShuffledDeck (Deck.Deck x) ->
+--         List.map Debug.toString deck
+-- )
 ---- PROGRAM ----
 
 
