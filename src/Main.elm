@@ -56,7 +56,7 @@ view model =
         , Html.ul
             [ HA.class "hand rotateHand"
             ]
-            (List.map Cards.viewA (List.take 10 cards))
+            (List.map Cards.viewLabel (List.take 10 cards))
         ]
 
 

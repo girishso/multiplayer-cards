@@ -2,7 +2,7 @@ module Cards exposing
     ( Suit(..), Face(..), Card(..)
     , new, defaultNew
     , viewCard, defaultFace
-    , viewA, viewCard2
+    , viewA, viewCard2, viewDiv, viewLabel, viewSpan
     )
 
 {-| Card datatypes and views
@@ -359,6 +359,21 @@ viewCard2 innerWrapper card =
 viewA : Card -> Html msg
 viewA card =
     viewCard2 Html.a card
+
+
+viewSpan : Card -> Html msg
+viewSpan card =
+    viewCard2 Html.span card
+
+
+viewDiv : Card -> Html msg
+viewDiv card =
+    viewCard2 Html.div card
+
+
+viewLabel : Card -> Html msg
+viewLabel card =
+    viewCard2 Html.label card
 
 
 
