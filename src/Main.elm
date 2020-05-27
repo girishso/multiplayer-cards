@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Cards
@@ -50,21 +50,17 @@ view model =
             Deck.getCards model.deck
                 |> Debug.log "md"
     in
-    Html.div []
+    Html.div [ HA.class "playingCards faceImages" ]
         [ Html.h1 []
             [ Html.text "String.String" ]
-        , Html.div
-            [ HA.class "playingCards faceImages rotateHand hand"
+        , Html.ul
+            [ HA.class "hand rotateHand"
             ]
-            (List.map Cards.viewCard2 (List.take 10 cards))
+            (List.map Cards.viewA (List.take 10 cards))
         ]
 
 
 
--- (case model.deck of
---     Deck.ShuffledDeck (Deck.Deck x) ->
---         List.map Debug.toString deck
--- )
 ---- PROGRAM ----
 
 

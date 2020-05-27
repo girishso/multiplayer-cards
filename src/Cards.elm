@@ -2,7 +2,7 @@ module Cards exposing
     ( Suit(..), Face(..), Card(..)
     , new, defaultNew
     , viewCard, defaultFace
-    , viewCard2
+    , viewA, viewCard2
     )
 
 {-| Card datatypes and views
@@ -26,7 +26,7 @@ Use these for defining card-specifc game logic or for displaying specific cards.
 
 -}
 
-import Html exposing (Html)
+import Html as Html exposing (Html)
 import Html.Attributes as HA
 import Html.Entity
 import Json.Encode as JE
@@ -327,8 +327,8 @@ viewCard card =
             ( "black", String.fromChar <| Char.fromCode 0x0001F0A0 )
 
 
-viewCard2 : Card -> Html msg
-viewCard2 card =
+viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Card -> Html msg
+viewCard2 innerWrapper card =
     let
         ( suite, face, suitesEnyity ) =
             case card of
@@ -347,11 +347,22 @@ viewCard2 card =
                 Back ->
                     ( "back", "", Html.Entity.nbsp )
     in
-    Html.div [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
-        [ Html.span [ HA.class "rank" ] [ Html.text face ]
-        , Html.span [ HA.class "suit" ]
-            [ Html.text suitesEnyity ]
+    Html.li []
+        [ innerWrapper [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
+            [ Html.span [ HA.class "rank" ] [ Html.text face ]
+            , Html.span [ HA.class "suit" ]
+                [ Html.text suitesEnyity ]
+            ]
         ]
+
+
+viewA : Card -> Html msg
+viewA card =
+    viewCard2 Html.a card
+
+
+
+-- viewSpan, viewDiv, viewLabel
 
 
 setInnerHTML str =
