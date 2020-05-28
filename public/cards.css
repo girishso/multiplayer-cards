@@ -124,6 +124,12 @@
 .playingCards.inText .card input {
     margin-top: 0;
 }
+.playingCards.suitTop .card .suit {
+  /* display: inline; */
+  margin-top: -1em;
+  margin-left: 1.2em;
+}
+/* *:not(:first-child):not(:last-child) https://codepen.io/bentomas/pen/Gwqoe */
 
 /* different rank letters for different languages */
 .playingCards .card .rank:after,
@@ -457,6 +463,7 @@
 
 .playingCards ul.table,
 .playingCards ul.hand,
+.playingCards ul.twowaypile,
 .playingCards ul.deck {
     list-style-type: none;
     padding: 0;
@@ -464,11 +471,14 @@
     position: relative;
     clear: both;
 }
-.playingCards ul.hand {
+.playingCards ul.hand,
+.playingCards ul.twowaypile
+ {
     margin-bottom: 3.5em;
 }
 .playingCards ul.table li,
 .playingCards ul.hand li,
+.playingCards ul.twowaypile li,
 .playingCards ul.deck li {
     margin: 0;
     padding: 0;
@@ -477,14 +487,17 @@
 }
 
 .playingCards ul.hand,
+.playingCards ul.twowaypile,
 .playingCards ul.deck {
     height: 8em;
 }
 .playingCards ul.hand li,
+.playingCards ul.twowaypile li,
 .playingCards ul.deck li {
     position: absolute;
 }
-.playingCards ul.hand li {
+.playingCards ul.hand li
+.playingCards ul.twowaypile li {
     bottom: 0;
 }
 .playingCards ul.hand li:nth-child(1)  { left: 0; }
@@ -514,6 +527,20 @@
 .playingCards ul.hand li:nth-child(24) { left: 25.3em; }
 .playingCards ul.hand li:nth-child(25) { left: 26.4em; }
 .playingCards ul.hand li:nth-child(26) { left: 27.5em; }
+
+.playingCards ul.twowaypile li:nth-child(1)  { top: 0; }
+.playingCards ul.twowaypile li:nth-child(2)  { top: 1.3em; }
+.playingCards ul.twowaypile li:nth-child(3)  { top: 2.5em; }
+.playingCards ul.twowaypile li:nth-child(4)  { top: 3.5em; }
+.playingCards ul.twowaypile li:nth-child(5)  { top: 4.6em; }
+.playingCards ul.twowaypile li:nth-child(6)  { top: 5.7em; }
+.playingCards ul.twowaypile li:nth-child(7)  { top: 6.8em; }
+.playingCards ul.twowaypile li:nth-child(8)  { top: 7.9em; }
+.playingCards ul.twowaypile li:nth-child(9)  { top: 9.0em; }
+.playingCards ul.twowaypile li:nth-child(10) { top: 10.1em; }
+.playingCards ul.twowaypile li:nth-child(11) { top: 11.2em; }
+.playingCards ul.twowaypile li:nth-child(12) { top: 12.3em; }
+.playingCards ul.twowaypile li:nth-child(13) { top: 13.5em; }
 
 /* rotate cards if rotateHand option is on */
 .playingCards.rotateHand ul.hand li:nth-child(1) {

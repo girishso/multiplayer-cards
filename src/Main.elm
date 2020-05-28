@@ -5,6 +5,7 @@ import Cards
 import Deck exposing (Deck)
 import Html exposing (Html)
 import Html.Attributes as HA
+import Pile exposing (Pile)
 import Random
 
 
@@ -50,13 +51,22 @@ view model =
             Deck.getCards model.deck
                 |> Debug.log "md"
     in
-    Html.div [ HA.class "playingCards faceImages" ]
-        [ Html.h1 []
-            [ Html.text "String.String" ]
-        , Html.ul
-            [ HA.class "hand rotateHand"
+    Html.div [ HA.class "main" ]
+        [ Html.div [ HA.class "playingCards simpleCards suitTop rotateHand" ]
+            [ Html.ul
+                [ HA.class "twowaypile"
+                ]
+                (List.map Cards.viewA (List.take 10 cards))
             ]
-            (List.map Cards.viewLabel (List.take 10 cards))
+        , Html.div [ HA.class "playingCards faceImages rotateHand" ]
+            [ Html.h1 []
+                [ Html.text "String.String" ]
+            , Html.ul
+                [ HA.class "hand"
+                , HA.style "margin" "10em 0 0 0"
+                ]
+                (List.map Cards.viewA (List.take 10 cards))
+            ]
         ]
 
 

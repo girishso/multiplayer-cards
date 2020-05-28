@@ -2,7 +2,7 @@ module Cards exposing
     ( Suit(..), Face(..), Card(..)
     , new, defaultNew
     , viewCard, defaultFace
-    , viewA, viewCard2, viewDiv, viewLabel, viewSpan
+    , viewA, viewCard2, viewCardsDiv, viewDiv, viewLabel, viewSpan
     )
 
 {-| Card datatypes and views
@@ -374,6 +374,11 @@ viewDiv card =
 viewLabel : Card -> Html msg
 viewLabel card =
     viewCard2 Html.label card
+
+
+viewCardsDiv : List Card -> List (Html msg)
+viewCardsDiv cardsList =
+    List.map viewDiv (List.take 10 cardsList)
 
 
 
