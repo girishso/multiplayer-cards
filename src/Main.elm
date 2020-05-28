@@ -1,7 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Cards
+import Cards exposing (Card(..), Face(..), Suit(..))
 import Deck exposing (Deck)
 import Html exposing (Html)
 import Html.Attributes as HA
@@ -30,6 +30,7 @@ init =
 
 type Msg
     = ShuffleDeck Deck.ShuffledDeck
+    | CardSelected Card
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -38,6 +39,13 @@ update msg model =
         ShuffleDeck shuffledDeckDeck ->
             ( Model shuffledDeckDeck, Cmd.none )
                 |> Debug.log "mcmd"
+
+        CardSelected card ->
+            let
+                _ =
+                    Debug.log "card" card
+            in
+            ( model, Cmd.none )
 
 
 
@@ -56,7 +64,7 @@ view model =
             [ Html.ul
                 [ HA.class "twowaypile"
                 ]
-                (List.map Cards.viewA (List.take 10 cards))
+                (List.map (Cards.viewA CardSelected) (List.take 10 cards))
             ]
         , Html.div [ HA.class "playingCards faceImages rotateHand" ]
             [ Html.h1 []
@@ -65,7 +73,7 @@ view model =
                 [ HA.class "hand"
                 , HA.style "margin" "10em 0 0 0"
                 ]
-                (List.map Cards.viewA (List.take 10 cards))
+                (List.map (Cards.viewA CardSelected) (List.take 10 cards))
             ]
         ]
 

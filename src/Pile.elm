@@ -59,19 +59,19 @@ take pile =
             ( Nothing, pile )
 
 
-view : Pile -> Html msg
-view pile =
+view : (Card -> msg) -> Pile -> Html msg
+view onClickHandler pile =
     Html.div []
         [ case pile of
             SimplePile cardsList ->
                 Html.ul
                     [ HA.class "deck"
                     ]
-                    (Cards.viewCardsDiv cardsList)
+                    (Cards.viewCardsDiv onClickHandler cardsList)
 
             TwoWayPile cardsList ->
                 Html.ul
                     [ HA.class "deck"
                     ]
-                    (Cards.viewCardsDiv cardsList)
+                    (Cards.viewCardsDiv onClickHandler cardsList)
         ]

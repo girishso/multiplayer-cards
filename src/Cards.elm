@@ -29,6 +29,7 @@ Use these for defining card-specifc game logic or for displaying specific cards.
 import Html as Html exposing (Html)
 import Html.Attributes as HA
 import Html.Entity
+import Html.Events as HE
 import Json.Encode as JE
 
 
@@ -327,8 +328,8 @@ viewCard card =
             ( "black", String.fromChar <| Char.fromCode 0x0001F0A0 )
 
 
-viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Card -> Html msg
-viewCard2 innerWrapper card =
+viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> (Card -> msg) -> Card -> Html msg
+viewCard2 innerWrapper onClickHandler card =
     let
         ( suite, face, suitesEnyity ) =
             case card of
@@ -347,7 +348,7 @@ viewCard2 innerWrapper card =
                 Back ->
                     ( "back", "", Html.Entity.nbsp )
     in
-    Html.li []
+    Html.li [ HE.onClick (onClickHandler card) ]
         [ innerWrapper [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
             [ Html.span [ HA.class "rank" ] [ Html.text face ]
             , Html.span [ HA.class "suit" ]
@@ -356,29 +357,29 @@ viewCard2 innerWrapper card =
         ]
 
 
-viewA : Card -> Html msg
-viewA card =
-    viewCard2 Html.a card
+viewA : (Card -> msg) -> Card -> Html msg
+viewA onClickHandler card =
+    viewCard2 Html.a onClickHandler card
 
 
-viewSpan : Card -> Html msg
-viewSpan card =
-    viewCard2 Html.span card
+viewSpan : (Card -> msg) -> Card -> Html msg
+viewSpan onClickHandler card =
+    viewCard2 Html.span onClickHandler card
 
 
-viewDiv : Card -> Html msg
-viewDiv card =
-    viewCard2 Html.div card
+viewDiv : (Card -> msg) -> Card -> Html msg
+viewDiv onClickHandler card =
+    viewCard2 Html.div onClickHandler card
 
 
-viewLabel : Card -> Html msg
-viewLabel card =
-    viewCard2 Html.label card
+viewLabel : (Card -> msg) -> Card -> Html msg
+viewLabel onClickHandler card =
+    viewCard2 Html.label onClickHandler card
 
 
-viewCardsDiv : List Card -> List (Html msg)
-viewCardsDiv cardsList =
-    List.map viewDiv (List.take 10 cardsList)
+viewCardsDiv : (Card -> msg) -> List Card -> List (Html msg)
+viewCardsDiv onClickHandler cardsList =
+    List.map (viewDiv onClickHandler) (List.take 10 cardsList)
 
 
 
