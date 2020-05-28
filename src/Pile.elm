@@ -1,6 +1,6 @@
 module Pile exposing (..)
 
-import Cards exposing (Card(..), Face(..), Suit(..))
+import Cards exposing (Card)
 import Html as Html exposing (Html)
 import Html.Attributes as HA
 

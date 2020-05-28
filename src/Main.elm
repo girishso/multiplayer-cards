@@ -1,8 +1,8 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Cards exposing (Card(..), Face(..), Suit(..))
-import Deck exposing (Deck)
+import Cards exposing (Card)
+import Deck as Deck exposing (Deck)
 import Html exposing (Html)
 import Html.Attributes as HA
 import Pile exposing (Pile)
@@ -14,12 +14,16 @@ import Random
 
 
 type alias Model =
-    { deck : Deck.ShuffledDeck }
+    { deck : Deck }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { deck = Deck.fullDeck }
+    let
+        deck =
+            Deck.fullDeck
+    in
+    ( { deck = deck }
     , Random.generate ShuffleDeck Deck.randomDeck
     )
 
@@ -29,16 +33,15 @@ init =
 
 
 type Msg
-    = ShuffleDeck Deck.ShuffledDeck
+    = ShuffleDeck Deck
     | CardSelected Card
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ShuffleDeck shuffledDeckDeck ->
-            ( Model shuffledDeckDeck, Cmd.none )
-                |> Debug.log "mcmd"
+        ShuffleDeck deck ->
+            ( { model | deck = deck }, Cmd.none )
 
         CardSelected card ->
             let
@@ -57,7 +60,6 @@ view model =
     let
         cards =
             Deck.getCards model.deck
-                |> Debug.log "md"
     in
     Html.div [ HA.class "main" ]
         [ Html.div [ HA.class "playingCards simpleCards suitTop rotateHand" ]
@@ -73,7 +75,7 @@ view model =
                 [ HA.class "hand"
                 , HA.style "margin" "10em 0 0 0"
                 ]
-                (List.map (Cards.viewA CardSelected) (List.take 10 cards))
+                (List.map (Cards.viewA CardSelected) (List.take 13 cards))
             ]
         ]
 

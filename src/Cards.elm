@@ -1,56 +1,23 @@
-module Cards exposing
-    ( Suit(..), Face(..), Card(..)
-    , new, defaultNew
-    , viewCard, defaultFace
-    , viewA, viewCard2, viewCardsDiv, viewDiv, viewLabel, viewSpan
-    )
-
-{-| Card datatypes and views
-
-Use these for defining card-specifc game logic or for displaying specific cards.
-
-
-# Types
-
-@docs Suit, Face, Card
-
-
-# Construction
-
-@docs new, defaultNew
-
-
-# Views
-
-@docs viewCard, defaultFace
-
--}
+module Cards exposing (..)
 
 import Html as Html exposing (Html)
 import Html.Attributes as HA
 import Html.Entity
 import Html.Events as HE
 import Json.Encode as JE
+import List exposing (..)
+import Random
+import Tuple exposing (..)
 
 
-{-| A playing card suit type.
-
-Useful for pattern matching behavior of different games that are based on the suit of the card.
-
--}
 type Suit
-    = Spades
+    = Clubs
     | Diamonds
-    | Clubs
     | Hearts
+    | Spades
 
 
-{-| A playing card face type.
-
-Like the suit type above, this is useful for matching on different card faces, and does not induce an implicit order.
-
--}
-type Face
+type Rank
     = Ace
     | Two
     | Three
@@ -66,8 +33,65 @@ type Face
     | King
 
 
-resolveFace : Int -> Maybe Face
-resolveFace face =
+type alias Card =
+    { suit : Suit, rank : Rank }
+
+
+suits : List Suit
+suits =
+    [ Clubs, Diamonds, Hearts, Spades ]
+
+
+ranks : List Rank
+ranks =
+    [ Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King ]
+
+
+
+--
+-- fullDeck : List Card
+-- fullDeck =
+--     suits |> concatMap fullSuit
+--
+--
+-- fullSuit : Suit -> List Card
+-- fullSuit suit =
+--     map (Card suit) ranks
+--
+
+
+toRank : Card -> Rank
+toRank { suit, rank } =
+    rank
+
+
+toSuit : Card -> Suit
+toSuit { suit, rank } =
+    suit
+
+
+shuffleOf : List Card -> Random.Generator (List Card)
+shuffleOf cards =
+    randomListGenerator cards |> Random.map (shuffleList cards)
+
+
+shuffleList : List a -> List Int -> List a
+shuffleList toShuffle randomList =
+    randomList
+        |> map2 Tuple.pair toShuffle
+        |> sortBy Tuple.second
+        |> map Tuple.first
+
+
+randomListGenerator : List a -> Random.Generator (List Int)
+randomListGenerator list =
+    Random.list
+        (List.length list)
+        (Random.int Random.minInt Random.maxInt)
+
+
+resolveRank : Int -> Maybe Rank
+resolveRank face =
     case face of
         1 ->
             Just Ace
@@ -119,8 +143,8 @@ resolveFace face =
     defaultFace King == 13
 
 -}
-defaultFace : Face -> Int
-defaultFace face =
+rankToInt : Rank -> Int
+rankToInt face =
     case face of
         Ace ->
             1
@@ -162,9 +186,9 @@ defaultFace face =
             13
 
 
-faceStr : Face -> String
-faceStr face =
-    case face of
+rankStr : Rank -> String
+rankStr rank =
+    case rank of
         Ace ->
             "A"
 
@@ -205,148 +229,25 @@ faceStr face =
             "K"
 
 
-{-| A playing card type.
-
-Can either hold a card of suit and face, or a blank card.
-
-Face numbers are designated from 1 to 13 for A-K. Games which treat the ace differently can specify their behavior through the game logic.
-
-The blank variant is useful for displaying cards that have not been flipped over, for instance.
-
-    aceOfSpades =
-        Card Spades Ace
-
-    blankCard =
-        Back
-
--}
-type Card
-    = Card Suit Face
-    | Back
-
-
-resolveSuit : String -> Maybe Suit
-resolveSuit suit =
-    case String.toLower suit of
-        "spades" ->
-            Just Spades
-
-        "diamonds" ->
-            Just Diamonds
-
-        "clubs" ->
-            Just Clubs
-
-        "hearts" ->
-            Just Hearts
-
-        _ ->
-            Nothing
-
-
-{-| Construct a new card.
-
-The first argument must be one of "spades", "diamonds", "clubs", or "hearts" (any case) for the card suit.
-
-The second argument must be an integer from 1 to 13 for A-K.
-
-Use [Cards.defaultNew](Cards#defaultNew) if you want a `Card` instead of a `Maybe Card`.
-
-    new "spades" 1 == Just (Card Spades Ace)
-
-    new "SPADES" 1 == Just (Card Spades Ace)
-
-    new "horses" 1 == Nothing
-
-    new "spades" 0 == Nothing
-
--}
-new : String -> Int -> Maybe Card
-new suit face =
-    if face < 1 || face > 13 then
-        Nothing
-
-    else
-        case resolveSuit suit of
-            Just cardSuit ->
-                case resolveFace face of
-                    Just cardFace ->
-                        Just <| Card cardSuit cardFace
-
-                    Nothing ->
-                        Nothing
-
-            Nothing ->
-                Nothing
-
-
-{-| Construct a new card with a default argument.
-
-The first input is the default card to use if construction fails.
-
-The remaining two inputs correspond to the two inputs for [Cards.new](Cards#new).
-
-    defaultNew Back "spades" 1 == Card Spades Ace
-
-    defaultNew Back "SPADES" 1 == Card Spades Ace
-
-    defaultNew Back "horses" 1 == Back
-
-    defaultNew Back "spades" 0 == Back
-
--}
-defaultNew : Card -> String -> Int -> Card
-defaultNew default suit face =
-    Maybe.withDefault default <| new suit face
-
-
-{-| Return the color and unicode string for a `Card`.
-
-Use this function to write Html views for cards or decks.
-
-    viewCard (defaultNew Back "spades" 1) == ( "black", "🂡" )
-
-    viewCard (defaultNew Back "hearts" 7) == ( "red", "🃗" )
-
--}
-viewCard : Card -> ( String, String )
-viewCard card =
-    case card of
-        Card Spades value ->
-            ( "black", viewFace 0x0001F0A0 value )
-
-        Card Diamonds value ->
-            ( "red", viewFace 0x0001F0B0 value )
-
-        Card Clubs value ->
-            ( "black", viewFace 0x0001F0C0 value )
-
-        Card Hearts value ->
-            ( "red", viewFace 0x0001F0D0 value )
-
-        Back ->
-            ( "black", String.fromChar <| Char.fromCode 0x0001F0A0 )
-
-
 viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> (Card -> msg) -> Card -> Html msg
-viewCard2 innerWrapper onClickHandler card =
+viewCard2 innerWrapper onClickHandler ({ rank, suit } as card) =
     let
         ( suite, face, suitesEnyity ) =
-            case card of
-                Card Spades value ->
-                    ( "spades", faceStr value, Html.Entity.spades )
+            case suit of
+                Spades ->
+                    ( "spades", rankStr rank, Html.Entity.spades )
 
-                Card Diamonds value ->
-                    ( "diams", faceStr value, Html.Entity.diams )
+                Diamonds ->
+                    ( "diams", rankStr rank, Html.Entity.diams )
 
-                Card Clubs value ->
-                    ( "clubs", faceStr value, Html.Entity.clubs )
+                Clubs ->
+                    ( "clubs", rankStr rank, Html.Entity.clubs )
 
-                Card Hearts value ->
-                    ( "hearts", faceStr value, Html.Entity.hearts )
+                Hearts ->
+                    ( "hearts", rankStr rank, Html.Entity.hearts )
 
-                Back ->
-                    ( "back", "", Html.Entity.nbsp )
+        -- Back ->
+        --     ( "back", "", Html.Entity.nbsp )
     in
     Html.li [ HE.onClick (onClickHandler card) ]
         [ innerWrapper [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
@@ -388,13 +289,3 @@ viewCardsDiv onClickHandler cardsList =
 
 setInnerHTML str =
     HA.property "innerHTML" (JE.string str)
-
-
-viewFace : Int -> Face -> String
-viewFace suit face =
-    let
-        faceVal =
-            defaultFace face
-    in
-    Char.fromCode (suit + faceVal)
-        |> String.fromChar
