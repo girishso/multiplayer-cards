@@ -95,7 +95,7 @@ distribute2 players_ (Deck cards_) =
                             else
                                 n
                     in
-                    helper (List.Extra.updateAt currentPlayerIx (Player.addCard x) players) xs (currentPlayerIx + 1)
+                    helper (List.Extra.updateAt currentPlayerIx (Player.giveCard x) players) xs (currentPlayerIx + 1)
     in
     helper players_ cards_ 0
 

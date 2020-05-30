@@ -20,7 +20,7 @@ type alias Model =
 
 
 numberOfPlayers =
-    8
+    2
 
 
 init : ( Model, Cmd Msg )
@@ -107,16 +107,18 @@ view model =
 
 
 viewPlayer player =
-    Html.div [ HA.class "player playingCards faceImages rotateHand" ]
-        [ Html.h1 []
-            [ Html.text player.name ]
-        , Html.h3 []
-            [ player.cards |> List.length |> String.fromInt |> Html.text ]
-        , Html.ul
-            [ HA.class "hand"
-            , HA.style "margin" "0 0 0 0"
+    Html.div []
+        [ Html.div [ HA.class "player playingCards faceImages rotateHand" ]
+            [ Html.h1 []
+                [ Html.text player.name ]
+            , Html.h3 []
+                [ player.cards |> List.length |> String.fromInt |> Html.text ]
+            , Html.ul
+                [ HA.class "hand"
+                , HA.style "margin" "0 0 0 0"
+                ]
+                (List.map (Cards.viewA CardSelected) player.cards)
             ]
-            (List.map (Cards.viewA CardSelected) player.cards)
         ]
 
 

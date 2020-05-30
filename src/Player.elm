@@ -9,6 +9,6 @@ type alias Player =
     }
 
 
-addCard : Card -> Player -> Player
-addCard card player =
+giveCard : Card -> Player -> Player
+giveCard card player =
     { player | cards = card :: player.cards }
