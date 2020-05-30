@@ -5,7 +5,9 @@ import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
 import Html exposing (Html)
 import Html.Attributes as HA
+import Html.Events as HE
 import Pile exposing (Pile)
+import Player exposing (Player)
 import Random
 
 
@@ -14,7 +16,11 @@ import Random
 
 
 type alias Model =
-    { deck : Deck }
+    { deck : Deck, players : List Player }
+
+
+numberOfPlayers =
+    8
 
 
 init : ( Model, Cmd Msg )
@@ -22,10 +28,22 @@ init =
     let
         deck =
             Deck.fullDeck
+
+        players =
+            List.map (\n -> Player ("Player " ++ String.fromInt n) []) (List.range 1 numberOfPlayers)
+
+        _ =
+            players
+                |> List.map .name
+                |> Debug.log "playersxx"
     in
-    ( { deck = deck }
-    , Random.generate ShuffleDeck Deck.randomDeck
+    ( { deck = deck, players = players }
+    , shuffle
     )
+
+
+shuffle =
+    Random.generate ShuffleDeck Deck.randomDeck
 
 
 
@@ -35,13 +53,23 @@ init =
 type Msg
     = ShuffleDeck Deck
     | CardSelected Card
+    | Shuffle
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ShuffleDeck deck ->
-            ( { model | deck = deck }, Cmd.none )
+            let
+                players =
+                    Deck.distribute2 model.players deck
+
+                -- _ =
+                --     cards |> List.length |> Debug.log "distribute"
+                -- players =
+                --     List.map2 (\player cards_ -> { player | cards = cards_ }) model.players cards
+            in
+            ( { model | players = players }, Cmd.none )
 
         CardSelected card ->
             let
@@ -49,6 +77,9 @@ update msg model =
                     Debug.log "card" card
             in
             ( model, Cmd.none )
+
+        Shuffle ->
+            ( model, shuffle )
 
 
 
@@ -62,21 +93,30 @@ view model =
             Deck.getCards model.deck
     in
     Html.div [ HA.class "main" ]
-        [ Html.div [ HA.class "playingCards simpleCards suitTop rotateHand" ]
-            [ Html.ul
-                [ HA.class "twowaypile"
-                ]
-                (List.map (Cards.viewA CardSelected) (List.take 10 cards))
+        [ --  Html.div [ HA.class "playingCards simpleCards suitTop rotateHand" ]
+          --     [ Html.ul
+          --         [ HA.class "twowaypile"
+          --         ]
+          --         (List.map (Cards.viewA CardSelected) (List.take 5 cards))
+          --     , Html.button [ HE.onClick Shuffle ] [ Html.text "Shuffle" ]
+          --     ]
+          -- ,
+          Html.div [ HA.class "players" ]
+            (List.map viewPlayer model.players)
+        ]
+
+
+viewPlayer player =
+    Html.div [ HA.class "player playingCards faceImages rotateHand" ]
+        [ Html.h1 []
+            [ Html.text player.name ]
+        , Html.h3 []
+            [ player.cards |> List.length |> String.fromInt |> Html.text ]
+        , Html.ul
+            [ HA.class "hand"
+            , HA.style "margin" "0 0 0 0"
             ]
-        , Html.div [ HA.class "playingCards faceImages rotateHand" ]
-            [ Html.h1 []
-                [ Html.text "String.String" ]
-            , Html.ul
-                [ HA.class "hand"
-                , HA.style "margin" "10em 0 0 0"
-                ]
-                (List.map (Cards.viewA CardSelected) (List.take 13 cards))
-            ]
+            (List.map (Cards.viewA CardSelected) player.cards)
         ]
 
 

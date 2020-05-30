@@ -20,6 +20,8 @@ module Deck exposing (..)
 -}
 
 import Cards exposing (Card, Rank(..), Suit(..))
+import List.Extra
+import Player exposing (Player)
 import Random
 import Random.List exposing (shuffle)
 
@@ -74,6 +76,28 @@ Makes the deck in A-K order
 fullSuit : Suit -> List Card
 fullSuit suit =
     List.map (Card suit) [ Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King ]
+
+
+distribute2 : List Player -> Deck -> List Player
+distribute2 players_ (Deck cards_) =
+    let
+        helper players cards n =
+            case cards of
+                [] ->
+                    players
+
+                x :: xs ->
+                    let
+                        currentPlayerIx =
+                            if remainderBy (List.length players) n == 0 then
+                                0
+
+                            else
+                                n
+                    in
+                    helper (List.Extra.updateAt currentPlayerIx (Player.addCard x) players) xs (currentPlayerIx + 1)
+    in
+    helper players_ cards_ 0
 
 
 

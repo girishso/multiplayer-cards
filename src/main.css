@@ -18,4 +18,15 @@ body {
 
 .main {
   padding: 2em;
+
+}
+
+.players {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+
+.player {
+
 }
