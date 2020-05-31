@@ -3,6 +3,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
+import Helpers
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
@@ -35,15 +36,15 @@ type alias PlayState =
 
 
 initGameDefinition =
-    { numberOfPlayers = 3
+    { numberOfPlayers = 7
     , numberOfDecks = 2
     , numberOfPiles = 4
     }
 
 
 initPlayState gameDefinition =
-    { players = makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
-    , piles = makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
+    { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
+    , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
     }
 
 
@@ -59,16 +60,12 @@ init =
     ( { gameDefinition = gameDefinition
       , playState = initPlayState gameDefinition
       }
-    , shuffle
+    , shuffle gameDefinition
     )
 
 
-makeListOf n f =
-    List.map f (List.range 1 n)
-
-
-shuffle =
-    Random.generate ShuffleDeck Deck.randomDeck
+shuffle { numberOfDecks } =
+    Random.generate ShuffleDeck (Deck.randomDeck numberOfDecks)
 
 
 
@@ -104,7 +101,7 @@ update msg ({ playState, gameDefinition } as model) =
             ( model, Cmd.none )
 
         Shuffle ->
-            ( model, shuffle )
+            ( model, shuffle gameDefinition )
 
 
 setPlayState playState model =

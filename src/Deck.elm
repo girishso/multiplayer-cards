@@ -20,6 +20,7 @@ module Deck exposing (..)
 -}
 
 import Cards exposing (Card, Rank(..), Suit(..))
+import Helpers
 import List.Extra
 import Player exposing (Player)
 import Random
@@ -42,13 +43,14 @@ getCards (Deck cards) =
     fullDeck == Deck [ Card Spades Ace, Card Spades Two, ... ]
 
 -}
-fullDeck : Deck
-fullDeck =
+fullDeck : Int -> Deck
+fullDeck n =
     let
         suits =
             [ Spades, Diamonds, Clubs, Hearts ]
     in
-    List.map fullSuit suits
+    Helpers.makeListOf n (always (List.map fullSuit suits))
+        |> List.concat
         |> List.concat
         |> Deck
 
@@ -59,9 +61,9 @@ fullDeck =
     Random.generate ShuffleDeck randomDeck
 
 -}
-randomDeck : Random.Generator Deck
-randomDeck =
-    case fullDeck of
+randomDeck : Int -> Random.Generator Deck
+randomDeck n =
+    case fullDeck n of
         Deck deck ->
             Random.map Deck <| shuffle deck
 
