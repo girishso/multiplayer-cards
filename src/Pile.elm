@@ -71,17 +71,24 @@ nCards pile =
 
 view : (Card -> msg) -> Pile -> Html msg
 view onClickHandler pile =
+    let
+        viewPile cards =
+            Html.ul
+                [ HA.class "deck"
+                ]
+                (case cards of
+                    [] ->
+                        [ Cards.viewBlank ]
+
+                    _ ->
+                        Cards.viewCardsDiv onClickHandler cards
+                )
+    in
     Html.div []
         [ case pile of
             SimplePile cards ->
-                Html.ul
-                    [ HA.class "deck"
-                    ]
-                    (Cards.viewCardsDiv onClickHandler cards)
+                viewPile cards
 
             TwoWayPile cards ->
-                Html.ul
-                    [ HA.class "deck"
-                    ]
-                    (Cards.viewCardsDiv onClickHandler cards)
+                viewPile cards
         ]

@@ -55,6 +55,11 @@
     /* yes, it's intentional that Mozilla, Webkit, Opera and IE all will get different backgrounds ... why not? :) */
 }
 
+.playingCards .card.blank {
+    text-indent: -4000px;
+    background-color: #ccc;
+}
+
 /* suit colours
 ********************************************************************/
 

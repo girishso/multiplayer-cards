@@ -283,8 +283,13 @@ viewCardsDiv onClickHandler cardsList =
     List.map (viewDiv onClickHandler) (List.take 10 cardsList)
 
 
-
--- viewSpan, viewDiv, viewLabel
+viewBlank : Html msg
+viewBlank =
+    Html.li []
+        [ Html.span [ HA.class "card blank" ]
+            [ Html.text "*"
+            ]
+        ]
 
 
 setInnerHTML str =
