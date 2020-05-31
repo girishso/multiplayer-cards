@@ -36,8 +36,8 @@ type alias PlayState =
 
 
 initGameDefinition =
-    { numberOfPlayers = 7
-    , numberOfDecks = 2
+    { numberOfPlayers = 4
+    , numberOfDecks = 1
     , numberOfPiles = 4
     }
 
@@ -51,9 +51,6 @@ initPlayState gameDefinition =
 init : ( Model, Cmd Msg )
 init =
     let
-        deck =
-            Deck.fullDeck
-
         gameDefinition =
             initGameDefinition
     in
@@ -85,11 +82,6 @@ update msg ({ playState, gameDefinition } as model) =
             let
                 players =
                     Deck.distribute2 playState.players deck
-
-                -- _ =
-                --     cards |> List.length |> Debug.log "distribute"
-                -- players =
-                --     List.map2 (\player cards_ -> { player | cards = cards_ }) model.players cards
             in
             ( setPlayState { playState | players = players } model, Cmd.none )
 
@@ -127,15 +119,27 @@ view ({ playState, gameDefinition } as model) =
           --     , Html.button [ HE.onClick Shuffle ] [ Html.text "Shuffle" ]
           --     ]
           -- ,
-          Html.div [ HA.class "players" ]
+          Html.div [ HA.class "piles" ]
+            (List.map viewPile playState.piles)
+        , Html.div [ HA.class "players" ]
             (List.map viewPlayer playState.players)
+        ]
+
+
+viewPile pile =
+    Html.div []
+        [ Html.div [ HA.class "pile playingCards faceImages" ]
+            [ Html.h3 []
+                [ Pile.nCards pile |> String.fromInt |> Html.text ]
+            , Pile.view CardSelected pile
+            ]
         ]
 
 
 viewPlayer player =
     Html.div []
-        [ Html.div [ HA.class "player playingCards faceImages rotateHand" ]
-            [ Html.h1 []
+        [ Html.div [ HA.class "player playingCards faceImages" ]
+            [ Html.h2 []
                 [ Html.text player.name ]
             , Html.h3 []
                 [ player.cards |> List.length |> String.fromInt |> Html.text ]

@@ -29,49 +29,59 @@ newTwoWayPile =
 add : Card -> HeadOrTail -> Pile -> Pile
 add card headOrTail pile =
     let
-        appendCard cardsList =
-            List.append cardsList [ card ]
+        appendCard cards =
+            List.append cards [ card ]
     in
     case pile of
-        SimplePile cardsList ->
-            appendCard cardsList |> SimplePile
+        SimplePile cards ->
+            appendCard cards |> SimplePile
 
-        TwoWayPile cardsList ->
+        TwoWayPile cards ->
             TwoWayPile <|
                 case headOrTail of
                     Head ->
-                        card :: cardsList
+                        card :: cards
 
                     Tail ->
-                        appendCard cardsList
+                        appendCard cards
 
                     DoesntMatter ->
-                        appendCard cardsList
+                        appendCard cards
 
 
 take : Pile -> ( Maybe Card, Pile )
 take pile =
     case pile of
-        SimplePile cardsList ->
-            ( List.head cardsList, List.drop 1 cardsList |> SimplePile )
+        SimplePile cards ->
+            ( List.head cards, List.drop 1 cards |> SimplePile )
 
-        TwoWayPile cardsList ->
+        TwoWayPile cards ->
             ( Nothing, pile )
+
+
+nCards : Pile -> Int
+nCards pile =
+    case pile of
+        SimplePile cards ->
+            List.length cards
+
+        TwoWayPile cards ->
+            List.length cards
 
 
 view : (Card -> msg) -> Pile -> Html msg
 view onClickHandler pile =
     Html.div []
         [ case pile of
-            SimplePile cardsList ->
+            SimplePile cards ->
                 Html.ul
                     [ HA.class "deck"
                     ]
-                    (Cards.viewCardsDiv onClickHandler cardsList)
+                    (Cards.viewCardsDiv onClickHandler cards)
 
-            TwoWayPile cardsList ->
+            TwoWayPile cards ->
                 Html.ul
                     [ HA.class "deck"
                     ]
-                    (Cards.viewCardsDiv onClickHandler cardsList)
+                    (Cards.viewCardsDiv onClickHandler cards)
         ]
