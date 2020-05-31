@@ -9,6 +9,10 @@ type alias Player =
     }
 
 
+default =
+    Player "" []
+
+
 giveCard : Card -> Player -> Player
 giveCard card player =
     { player | cards = card :: player.cards }

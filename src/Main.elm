@@ -7,6 +7,7 @@ import Helpers
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
+import List.Extra
 import Pile exposing (Pile)
 import Player exposing (Player)
 import Random
@@ -32,6 +33,7 @@ type alias GameDefinition =
 type alias PlayState =
     { players : List Player
     , piles : List Pile
+    , thisPlayer : Player
     }
 
 
@@ -43,8 +45,16 @@ initGameDefinition =
 
 
 initPlayState gameDefinition =
-    { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
+    let
+        players =
+            Helpers.makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
+    in
+    { players = players
     , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
+    , thisPlayer =
+        players
+            |> List.Extra.getAt 0
+            |> Maybe.withDefault Player.default
     }
 
 
@@ -129,9 +139,7 @@ view ({ playState, gameDefinition } as model) =
 viewPile pile =
     Html.div []
         [ Html.div [ HA.class "pile playingCards faceImages" ]
-            [ Html.h3 []
-                [ Pile.nCards pile |> String.fromInt |> Html.text ]
-            , Pile.view CardSelected pile
+            [ Pile.view CardSelected pile
             ]
         ]
 
