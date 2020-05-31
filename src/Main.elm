@@ -16,11 +16,35 @@ import Random
 
 
 type alias Model =
-    { deck : Deck, players : List Player }
+    { gameDefinition : GameDefinition
+    , playState : PlayState
+    }
 
 
-numberOfPlayers =
-    2
+type alias GameDefinition =
+    { numberOfPlayers : Int
+    , numberOfDecks : Int
+    , numberOfPiles : Int
+    }
+
+
+type alias PlayState =
+    { players : List Player
+    , piles : List Pile
+    }
+
+
+initGameDefinition =
+    { numberOfPlayers = 3
+    , numberOfDecks = 2
+    , numberOfPiles = 4
+    }
+
+
+initPlayState gameDefinition =
+    { players = makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
+    , piles = makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
+    }
 
 
 init : ( Model, Cmd Msg )
@@ -29,17 +53,18 @@ init =
         deck =
             Deck.fullDeck
 
-        players =
-            List.map (\n -> Player ("Player " ++ String.fromInt n) []) (List.range 1 numberOfPlayers)
-
-        _ =
-            players
-                |> List.map .name
-                |> Debug.log "playersxx"
+        gameDefinition =
+            initGameDefinition
     in
-    ( { deck = deck, players = players }
+    ( { gameDefinition = gameDefinition
+      , playState = initPlayState gameDefinition
+      }
     , shuffle
     )
+
+
+makeListOf n f =
+    List.map f (List.range 1 n)
 
 
 shuffle =
@@ -57,19 +82,19 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ playState, gameDefinition } as model) =
     case msg of
         ShuffleDeck deck ->
             let
                 players =
-                    Deck.distribute2 model.players deck
+                    Deck.distribute2 playState.players deck
 
                 -- _ =
                 --     cards |> List.length |> Debug.log "distribute"
                 -- players =
                 --     List.map2 (\player cards_ -> { player | cards = cards_ }) model.players cards
             in
-            ( { model | players = players }, Cmd.none )
+            ( setPlayState { playState | players = players } model, Cmd.none )
 
         CardSelected card ->
             let
@@ -82,16 +107,20 @@ update msg model =
             ( model, shuffle )
 
 
+setPlayState playState model =
+    { model | playState = playState }
+
+
+setGameDefinition gameDefinition model =
+    { model | gameDefinition = gameDefinition }
+
+
 
 ---- VIEW ----
 
 
 view : Model -> Html Msg
-view model =
-    let
-        cards =
-            Deck.getCards model.deck
-    in
+view ({ playState, gameDefinition } as model) =
     Html.div [ HA.class "main" ]
         [ --  Html.div [ HA.class "playingCards simpleCards suitTop rotateHand" ]
           --     [ Html.ul
@@ -102,7 +131,7 @@ view model =
           --     ]
           -- ,
           Html.div [ HA.class "players" ]
-            (List.map viewPlayer model.players)
+            (List.map viewPlayer playState.players)
         ]
 
 
