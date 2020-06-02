@@ -11,6 +11,7 @@ type alias Player =
     }
 
 
+default : Player
 default =
     Player "" []
 

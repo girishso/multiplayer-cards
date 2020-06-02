@@ -44,51 +44,6 @@ type alias LocalState =
     }
 
 
-initGameDefinition =
-    { numberOfPlayers = 4
-    , numberOfDecks = 1
-    , numberOfPiles = 4
-    }
-
-
-initPlayState gameDefinition =
-    let
-        players =
-            Helpers.makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
-    in
-    { players = players
-    , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
-    }
-
-
-initLocalState : PlayState -> LocalState
-initLocalState { players } =
-    { thisPlayerIx = 0
-    , selectedCard = Nothing
-    }
-
-
-init : ( Model, Cmd Msg )
-init =
-    let
-        gameDefinition =
-            initGameDefinition
-
-        playState =
-            initPlayState gameDefinition
-    in
-    ( { gameDefinition = gameDefinition
-      , playState = playState
-      , localState = initLocalState playState
-      }
-    , shuffle gameDefinition
-    )
-
-
-shuffle { numberOfDecks } =
-    Random.generate ShuffleDeck (Deck.randomDeck numberOfDecks)
-
-
 
 ---- UPDATE ----
 
@@ -128,14 +83,17 @@ update msg ({ playState, gameDefinition, localState } as model) =
             ( model, shuffle gameDefinition )
 
 
+setPlayState : a -> { b | playState : a } -> { b | playState : a }
 setPlayState v model =
     { model | playState = v }
 
 
+setLocalState : a -> { b | localState : a } -> { b | localState : a }
 setLocalState v model =
     { model | localState = v }
 
 
+setGameDefinition : a -> { b | gameDefinition : a } -> { b | gameDefinition : a }
 setGameDefinition v model =
     { model | gameDefinition = v }
 
@@ -150,6 +108,7 @@ getSelectedCard { localState } =
     localState.selectedCard
 
 
+getThisPlayer : List Player -> LocalState -> Player
 getThisPlayer players localState =
     players
         |> List.Extra.getAt localState.thisPlayerIx
@@ -163,21 +122,14 @@ getThisPlayer players localState =
 view : Model -> Html Msg
 view ({ playState, gameDefinition } as model) =
     Html.div [ HA.class "main" ]
-        [ --  Html.div [ HA.class "playingCards simpleCards suitTop rotateHand" ]
-          --     [ Html.ul
-          --         [ HA.class "twowaypile"
-          --         ]
-          --         (List.map (Cards.viewA CardSelected) (List.take 5 cards))
-          --     , Html.button [ HE.onClick Shuffle ] [ Html.text "Shuffle" ]
-          --     ]
-          -- ,
-          Html.div [ HA.class "piles" ]
+        [ Html.div [ HA.class "piles" ]
             (List.map (viewPile model) playState.piles)
         , Html.div [ HA.class "players" ]
             (List.map viewPlayer playState.players)
         ]
 
 
+viewPile : Model -> Pile -> Html Msg
 viewPile model pile =
     Html.div []
         [ Html.div [ HA.class "pile playingCards faceImages" ]
@@ -186,6 +138,7 @@ viewPile model pile =
         ]
 
 
+viewPlayer : Player -> Html Msg
 viewPlayer player =
     Html.div []
         [ Html.div [ HA.class "player playingCards faceImages" ]
@@ -202,6 +155,58 @@ viewPlayer player =
                 (List.map (Cards.viewA CardSelected) player.cards)
             ]
         ]
+
+
+
+---- inits
+
+
+initGameDefinition : GameDefinition
+initGameDefinition =
+    { numberOfPlayers = 4
+    , numberOfDecks = 1
+    , numberOfPiles = 4
+    }
+
+
+initPlayState : GameDefinition -> PlayState
+initPlayState gameDefinition =
+    let
+        players =
+            Helpers.makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
+    in
+    { players = players
+    , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
+    }
+
+
+initLocalState : PlayState -> LocalState
+initLocalState { players } =
+    { thisPlayerIx = 0
+    , selectedCard = Nothing
+    }
+
+
+init : ( Model, Cmd Msg )
+init =
+    let
+        gameDefinition =
+            initGameDefinition
+
+        playState =
+            initPlayState gameDefinition
+    in
+    ( { gameDefinition = gameDefinition
+      , playState = playState
+      , localState = initLocalState playState
+      }
+    , shuffle gameDefinition
+    )
+
+
+shuffle : { a | numberOfDecks : Int } -> Cmd Msg
+shuffle { numberOfDecks } =
+    Random.generate ShuffleDeck (Deck.randomDeck numberOfDecks)
 
 
 
