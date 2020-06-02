@@ -60,6 +60,16 @@
     background-color: #ccc;
 }
 
+.playingCards .card.dropzone {
+    text-indent: -4000px;
+    background-color: #eee;
+    border: 2px dashed #bbb;
+}
+.playingCards .card.dropzone.active:hover {
+    background-color: #bdf4fd;
+    border: 2px dashed #90bcc3;
+}
+
 /* suit colours
 ********************************************************************/
 

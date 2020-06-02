@@ -3,6 +3,7 @@ module Pile exposing (..)
 import Cards exposing (Card)
 import Html as Html exposing (Html)
 import Html.Attributes as HA
+import Maybe.Extra
 
 
 type Pile
@@ -26,8 +27,8 @@ newTwoWayPile =
     TwoWayPile
 
 
-add : Card -> HeadOrTail -> Pile -> Pile
-add card headOrTail pile =
+drop : Card -> HeadOrTail -> Pile -> Pile
+drop card headOrTail pile =
     let
         appendCard cards =
             List.append cards [ card ]
@@ -69,8 +70,8 @@ nCards pile =
             List.length cards
 
 
-view : (Card -> msg) -> Pile -> Html msg
-view onClickHandler pile =
+view : (Card -> msg) -> (Pile -> HeadOrTail -> Card -> msg) -> Maybe Card -> Pile -> Html msg
+view onClickHandler onDrop maybeCard pile =
     let
         viewPile cards =
             Html.ul
@@ -78,7 +79,7 @@ view onClickHandler pile =
                 ]
                 (case cards of
                     [] ->
-                        [ Cards.viewBlank ]
+                        [ Maybe.Extra.unwrap Cards.viewDropzone (Cards.viewDropzoneActive (onDrop pile DoesntMatter)) maybeCard ]
 
                     _ ->
                         Cards.viewCardsDiv onClickHandler cards

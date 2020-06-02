@@ -8,6 +8,7 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import List.Extra
+import Maybe.Extra
 import Pile exposing (Pile)
 import Player exposing (Player)
 import Random
@@ -20,6 +21,7 @@ import Random
 type alias Model =
     { gameDefinition : GameDefinition
     , playState : PlayState
+    , localState : LocalState
     }
 
 
@@ -33,7 +35,12 @@ type alias GameDefinition =
 type alias PlayState =
     { players : List Player
     , piles : List Pile
-    , thisPlayer : Player
+    }
+
+
+type alias LocalState =
+    { thisPlayerIx : Int
+    , selectedCard : Maybe Card
     }
 
 
@@ -51,10 +58,13 @@ initPlayState gameDefinition =
     in
     { players = players
     , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
-    , thisPlayer =
-        players
-            |> List.Extra.getAt 0
-            |> Maybe.withDefault Player.default
+    }
+
+
+initLocalState : PlayState -> LocalState
+initLocalState { players } =
+    { thisPlayerIx = 0
+    , selectedCard = Nothing
     }
 
 
@@ -63,9 +73,13 @@ init =
     let
         gameDefinition =
             initGameDefinition
+
+        playState =
+            initPlayState gameDefinition
     in
     ( { gameDefinition = gameDefinition
-      , playState = initPlayState gameDefinition
+      , playState = playState
+      , localState = initLocalState playState
       }
     , shuffle gameDefinition
     )
@@ -82,11 +96,12 @@ shuffle { numberOfDecks } =
 type Msg
     = ShuffleDeck Deck
     | CardSelected Card
+    | CardDroppedOnPile Pile Pile.HeadOrTail Card
     | Shuffle
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ playState, gameDefinition } as model) =
+update msg ({ playState, gameDefinition, localState } as model) =
     case msg of
         ShuffleDeck deck ->
             let
@@ -100,18 +115,45 @@ update msg ({ playState, gameDefinition } as model) =
                 _ =
                     Debug.log "card" card
             in
+            ( setLocalState { localState | selectedCard = Just card } model, Cmd.none )
+
+        CardDroppedOnPile pile headOrTail card ->
+            let
+                ( newPlayer, newPile ) =
+                    Player.dropCardOnPile card headOrTail pile (getThisPlayer playState.players localState)
+            in
             ( model, Cmd.none )
 
         Shuffle ->
             ( model, shuffle gameDefinition )
 
 
-setPlayState playState model =
-    { model | playState = playState }
+setPlayState v model =
+    { model | playState = v }
 
 
-setGameDefinition gameDefinition model =
-    { model | gameDefinition = gameDefinition }
+setLocalState v model =
+    { model | localState = v }
+
+
+setGameDefinition v model =
+    { model | gameDefinition = v }
+
+
+isCardSelected : Model -> Bool
+isCardSelected { localState } =
+    Maybe.Extra.isJust localState.selectedCard
+
+
+getSelectedCard : Model -> Maybe Card
+getSelectedCard { localState } =
+    localState.selectedCard
+
+
+getThisPlayer players localState =
+    players
+        |> List.Extra.getAt localState.thisPlayerIx
+        |> Maybe.withDefault Player.default
 
 
 
@@ -130,16 +172,16 @@ view ({ playState, gameDefinition } as model) =
           --     ]
           -- ,
           Html.div [ HA.class "piles" ]
-            (List.map viewPile playState.piles)
+            (List.map (viewPile model) playState.piles)
         , Html.div [ HA.class "players" ]
             (List.map viewPlayer playState.players)
         ]
 
 
-viewPile pile =
+viewPile model pile =
     Html.div []
         [ Html.div [ HA.class "pile playingCards faceImages" ]
-            [ Pile.view CardSelected pile
+            [ Pile.view CardSelected CardDroppedOnPile (getSelectedCard model) pile
             ]
         ]
 
@@ -147,10 +189,12 @@ viewPile pile =
 viewPlayer player =
     Html.div []
         [ Html.div [ HA.class "player playingCards faceImages" ]
-            [ Html.h2 []
-                [ Html.text player.name ]
-            , Html.h3 []
-                [ player.cards |> List.length |> String.fromInt |> Html.text ]
+            [ Html.h3 []
+                [ Html.text player.name
+                , Html.text "("
+                , player.cards |> List.length |> String.fromInt |> Html.text
+                , Html.text ")"
+                ]
             , Html.ul
                 [ HA.class "hand"
                 , HA.style "margin" "0 0 0 0"

@@ -292,5 +292,23 @@ viewBlank =
         ]
 
 
+viewDropzone : Html msg
+viewDropzone =
+    Html.li []
+        [ Html.span [ HA.class "card dropzone" ]
+            [ Html.text "*"
+            ]
+        ]
+
+
+viewDropzoneActive : (Card -> msg) -> Card -> Html msg
+viewDropzoneActive onDrop card =
+    Html.li [ HE.onClick (onDrop card) ]
+        [ Html.span [ HA.class "card active dropzone" ]
+            [ Html.text "*"
+            ]
+        ]
+
+
 setInnerHTML str =
     HA.property "innerHTML" (JE.string str)
