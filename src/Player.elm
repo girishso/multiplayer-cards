@@ -1,19 +1,21 @@
 module Player exposing (..)
 
 import Cards exposing (Card)
+import Id exposing (..)
 import List.Extra
 import Pile exposing (Pile)
 
 
 type alias Player =
-    { name : String
+    { id : Id PlayerId
+    , name : String
     , cards : List Card
     }
 
 
 default : Player
 default =
-    Player "" []
+    Player (playerId 0) "" []
 
 
 giveCard : Card -> Player -> Player

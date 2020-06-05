@@ -3,12 +3,13 @@ module Pile exposing (..)
 import Cards exposing (Card)
 import Html as Html exposing (Html)
 import Html.Attributes as HA
+import Id exposing (..)
 import Maybe.Extra
 
 
 type Pile
-    = SimplePile (List Card)
-    | TwoWayPile (List Card)
+    = SimplePile (Id PileId) (List Card)
+    | TwoWayPile (Id PileId) (List Card)
 
 
 type HeadOrTail
@@ -17,14 +18,14 @@ type HeadOrTail
     | DoesntMatter
 
 
-newSimplePile : List Card -> Pile
-newSimplePile =
-    SimplePile
+newSimplePile : Int -> List Card -> Pile
+newSimplePile id =
+    SimplePile (pileId id)
 
 
-newTwoWayPile : List Card -> Pile
-newTwoWayPile =
-    TwoWayPile
+newTwoWayPile : Int -> List Card -> Pile
+newTwoWayPile id =
+    TwoWayPile (pileId id)
 
 
 drop : Card -> HeadOrTail -> Pile -> Pile
@@ -34,11 +35,11 @@ drop card headOrTail pile =
             List.append cards [ card ]
     in
     case pile of
-        SimplePile cards ->
-            appendCard cards |> SimplePile
+        SimplePile id cards ->
+            appendCard cards |> SimplePile id
 
-        TwoWayPile cards ->
-            TwoWayPile <|
+        TwoWayPile id cards ->
+            TwoWayPile id <|
                 case headOrTail of
                     Head ->
                         card :: cards
@@ -53,25 +54,25 @@ drop card headOrTail pile =
 take : Pile -> ( Maybe Card, Pile )
 take pile =
     case pile of
-        SimplePile cards ->
-            ( List.head cards, List.drop 1 cards |> SimplePile )
+        SimplePile id cards ->
+            ( List.head cards, List.drop 1 cards |> SimplePile id )
 
-        TwoWayPile cards ->
+        TwoWayPile id cards ->
             ( Nothing, pile )
 
 
 nCards : Pile -> Int
 nCards pile =
     case pile of
-        SimplePile cards ->
+        SimplePile id cards ->
             List.length cards
 
-        TwoWayPile cards ->
+        TwoWayPile id cards ->
             List.length cards
 
 
 view : (Card -> msg) -> (Pile -> HeadOrTail -> Card -> msg) -> Maybe Card -> Pile -> Html msg
-view onClickHandler onDrop maybeCard pile =
+view onClickHandler onDrop maybeSelectedCard pile =
     let
         viewPile cards =
             Html.ul
@@ -79,7 +80,7 @@ view onClickHandler onDrop maybeCard pile =
                 ]
                 (case cards of
                     [] ->
-                        [ Maybe.Extra.unwrap Cards.viewDropzone (Cards.viewDropzoneActive (onDrop pile DoesntMatter)) maybeCard ]
+                        [ Maybe.Extra.unwrap Cards.viewDropzone (Cards.viewDropzoneActive (onDrop pile DoesntMatter)) maybeSelectedCard ]
 
                     _ ->
                         Cards.viewCardsDiv onClickHandler cards
@@ -87,9 +88,9 @@ view onClickHandler onDrop maybeCard pile =
     in
     Html.div []
         [ case pile of
-            SimplePile cards ->
+            SimplePile id cards ->
                 viewPile cards
 
-            TwoWayPile cards ->
+            TwoWayPile id cards ->
                 viewPile cards
         ]

@@ -49,7 +49,7 @@ fullDeck n =
         suits =
             [ Spades, Diamonds, Clubs, Hearts ]
     in
-    Helpers.makeListOf n (always (List.map fullSuit suits))
+    Helpers.makeListOf n (\_ _ -> List.map fullSuit suits)
         |> List.concat
         |> List.concat
         |> Deck

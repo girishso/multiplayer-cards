@@ -7,6 +7,7 @@ import Helpers
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
+import Id exposing (playerId)
 import List.Extra
 import Maybe.Extra
 import Pile exposing (Pile)
@@ -171,12 +172,8 @@ initGameDefinition =
 
 initPlayState : GameDefinition -> PlayState
 initPlayState gameDefinition =
-    let
-        players =
-            Helpers.makeListOf gameDefinition.numberOfPlayers (\n -> Player ("Player " ++ String.fromInt n) [])
-    in
-    { players = players
-    , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\n -> Pile.newTwoWayPile [])
+    { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
+    , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix [])
     }
 
 
