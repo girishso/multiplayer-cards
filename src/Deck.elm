@@ -47,7 +47,12 @@ fullDeck : Int -> Deck
 fullDeck n =
     let
         suits =
-            [ Spades, Diamonds, Clubs, Hearts ]
+            [ Spades
+
+            -- , Diamonds
+            -- , Clubs
+            -- , Hearts
+            ]
     in
     Helpers.makeListOf n (\_ _ -> List.map fullSuit suits)
         |> List.concat

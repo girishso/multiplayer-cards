@@ -7,7 +7,7 @@ import Helpers
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
-import Id exposing (playerId)
+import Id exposing (..)
 import List.Extra
 import Maybe.Extra
 import Pile exposing (Pile)
@@ -51,7 +51,7 @@ type alias LocalState =
 
 type Msg
     = ShuffleDeck Deck
-    | CardSelected Card
+    | CardSelected Player Card
     | CardDroppedOnPile Pile Pile.HeadOrTail Card
     | Shuffle
 
@@ -66,7 +66,7 @@ update msg ({ playState, gameDefinition, localState } as model) =
             in
             ( setPlayState { playState | players = players } model, Cmd.none )
 
-        CardSelected card ->
+        CardSelected player card ->
             let
                 _ =
                     Debug.log "card" card
@@ -75,10 +75,16 @@ update msg ({ playState, gameDefinition, localState } as model) =
 
         CardDroppedOnPile pile headOrTail card ->
             let
-                ( newPlayer, newPile ) =
+                _ =
+                    Debug.log "pile headOrTail card" ( pile, headOrTail, card )
+
+                newPlayState =
                     Player.dropCardOnPile card headOrTail pile (getThisPlayer playState.players localState)
+                        |> Tuple.mapBoth (\newPlayer -> List.Extra.updateAt (rawPlayerId newPlayer.id) (always newPlayer) playState.players)
+                            (\newPile -> Pile.updatePile newPile playState.piles)
+                        |> (\( newPlayers, newPiles ) -> { players = newPlayers, piles = newPiles })
             in
-            ( model, Cmd.none )
+            ( setPlayState newPlayState model, Cmd.none )
 
         Shuffle ->
             ( model, shuffle gameDefinition )
@@ -134,7 +140,7 @@ viewPile : Model -> Pile -> Html Msg
 viewPile model pile =
     Html.div []
         [ Html.div [ HA.class "pile playingCards faceImages" ]
-            [ Pile.view CardSelected CardDroppedOnPile (getSelectedCard model) pile
+            [ Pile.view (CardSelected (getThisPlayer model.playState.players model.localState)) CardDroppedOnPile (getSelectedCard model) pile
             ]
         ]
 
@@ -153,7 +159,7 @@ viewPlayer player =
                 [ HA.class "hand"
                 , HA.style "margin" "0 0 0 0"
                 ]
-                (List.map (Cards.viewA CardSelected) player.cards)
+                (List.map (Cards.viewA (CardSelected player)) player.cards)
             ]
         ]
 

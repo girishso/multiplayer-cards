@@ -30,4 +30,5 @@ takeCard card player =
 
 dropCardOnPile : Card -> Pile.HeadOrTail -> Pile -> Player -> ( Player, Pile )
 dropCardOnPile card headOrTail pile player =
-    ( takeCard card player, Pile.drop card headOrTail pile )
+    ( takeCard card player, Pile.add card headOrTail pile )
+        |> Debug.log "dropCardOnPile"

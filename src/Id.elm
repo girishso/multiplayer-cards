@@ -14,6 +14,11 @@ playerId =
     Id
 
 
+rawPlayerId : Id PlayerId -> Int
+rawPlayerId (Id id) =
+    id
+
+
 type PileId
     = PileIdUnused
 
@@ -21,3 +26,13 @@ type PileId
 pileId : Int -> Id PileId
 pileId =
     Id
+
+
+rawPileId : Id PileId -> Int
+rawPileId (Id id) =
+    id
+
+
+pileEql : Id PileId -> Id PileId -> Bool
+pileEql pile1Id pile2Id =
+    rawPileId pile1Id == rawPileId pile2Id

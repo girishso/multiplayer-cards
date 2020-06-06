@@ -4,6 +4,7 @@ import Cards exposing (Card)
 import Html as Html exposing (Html)
 import Html.Attributes as HA
 import Id exposing (..)
+import List.Extra
 import Maybe.Extra
 
 
@@ -28,9 +29,12 @@ newTwoWayPile id =
     TwoWayPile (pileId id)
 
 
-drop : Card -> HeadOrTail -> Pile -> Pile
-drop card headOrTail pile =
+add : Card -> HeadOrTail -> Pile -> Pile
+add card headOrTail pile =
     let
+        _ =
+            Debug.log "add card headOrTail pile" ( card, headOrTail, pile )
+
         appendCard cards =
             List.append cards [ card ]
     in
@@ -39,7 +43,7 @@ drop card headOrTail pile =
             appendCard cards |> SimplePile id
 
         TwoWayPile id cards ->
-            TwoWayPile id <|
+            (TwoWayPile id |> Debug.log "twowaypile") <|
                 case headOrTail of
                     Head ->
                         card :: cards
@@ -94,3 +98,21 @@ view onClickHandler onDrop maybeSelectedCard pile =
             TwoWayPile id cards ->
                 viewPile cards
         ]
+
+
+updatePile : Pile -> List Pile -> List Pile
+updatePile pile piles =
+    case pile of
+        SimplePile pileId cardList ->
+            List.Extra.updateAt (rawPileId pileId) (always pile) piles
+
+        TwoWayPile pileId cardList ->
+            List.Extra.updateAt (rawPileId pileId) (always pile) piles
+
+
+
+--
+--
+-- pileEql : Pile -> Pile -> Bool
+-- pileEql pile1 pile2 =
+--     rawPileId pile1 == rawPileId pile2
