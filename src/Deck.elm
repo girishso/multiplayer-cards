@@ -48,10 +48,9 @@ fullDeck n =
     let
         suits =
             [ Spades
-
-            -- , Diamonds
-            -- , Clubs
-            -- , Hearts
+            , Diamonds
+            , Clubs
+            , Hearts
             ]
     in
     Helpers.makeListOf n (\_ _ -> List.map fullSuit suits)

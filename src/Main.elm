@@ -258,12 +258,8 @@ gameDefinitionDecoder =
 modelEncoder : Model -> Encode.Value
 modelEncoder v =
     Encode.object
-        [ ( "gameDefinition"
-          , gameDefinitionEncoder v.gameDefinition
-          )
-        , ( "playState"
-          , playStateEncoder v.playState
-          )
+        [ ( "gameDefinition", gameDefinitionEncoder v.gameDefinition )
+        , ( "playState", playStateEncoder v.playState )
         ]
 
 
