@@ -34,3 +34,24 @@ body {
 .pile {
   width: 6em;
 }
+
+.rotate-270 {
+  transform: rotate(270deg);
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+.main-table {
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.main-table td {
+  border: 1px dotted #ccc;
+}
+
+.middle-row {
+  height: 80vh;
+}

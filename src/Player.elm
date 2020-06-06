@@ -49,6 +49,6 @@ encoder v =
 decoder : Decode.Decoder Player
 decoder =
     Decode.map3 Player
-        (Decode.field "id" (Decode.int |> Decode.map playerId))
+        (Decode.field "id" (Decode.map playerId Decode.int))
         (Decode.field "name" Decode.string)
         (Decode.field "cards" (Decode.list Cards.decoder))

@@ -4,7 +4,7 @@ import Browser
 import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
 import Helpers
-import Html exposing (Html)
+import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
 import Id exposing (..)
@@ -135,12 +135,43 @@ getThisPlayer players localState =
 
 view : Model -> Html Msg
 view ({ playState, gameDefinition } as model) =
-    Html.div [ HA.class "main" ]
-        [ Html.div [ HA.class "piles" ]
-            (List.map (viewPile model) playState.piles)
-        , Html.div [ HA.class "players" ]
-            (List.map viewPlayer playState.players)
+    Html.div
+        [ HA.class "main" ]
+        [ table [ HA.class "main-table" ]
+            [ tr [ HA.class "top-row" ]
+                [ td [ HA.colspan 3 ] [ text "Top row" ]
+                ]
+            , tr [ HA.class "top-player-row" ]
+                [ td [ HA.colspan 3 ]
+                    [ div [] (List.filter (\p -> rawPlayerId p.id == 2) playState.players |> List.map viewPlayer)
+                    ]
+                ]
+            , tr [ HA.class "middle-row" ]
+                [ td [ HA.class "mid-left rotate-270" ]
+                    [ div [] (List.filter (\p -> rawPlayerId p.id == 3) playState.players |> List.map viewPlayer)
+                    ]
+                , td [ HA.class "mid-mid" ] (List.map (viewPile model) playState.piles)
+                , td [ HA.class "mid-right rotate-90" ]
+                    [ div [] (List.filter (\p -> rawPlayerId p.id == 1) playState.players |> List.map viewPlayer)
+                    ]
+                ]
+            , tr [ HA.class "bottom-player-row" ]
+                [ td [ HA.colspan 3 ]
+                    [ div [] (List.filter (\p -> rawPlayerId p.id == 0) playState.players |> List.map viewPlayer)
+                    ]
+                ]
+            ]
         ]
+
+
+
+-- Html.div
+-- [ HA.class "main" ]
+-- [ Html.div [ HA.class "piles" ]
+--     (List.map (viewPile model) playState.piles)
+-- , Html.div [ HA.class "players" ]
+--     (List.map viewPlayer playState.players)
+-- ]
 
 
 viewPile : Model -> Pile -> Html Msg
@@ -156,13 +187,7 @@ viewPlayer : Player -> Html Msg
 viewPlayer player =
     Html.div []
         [ Html.div [ HA.class "player playingCards faceImages" ]
-            [ Html.h3 []
-                [ Html.text player.name
-                , Html.text "("
-                , player.cards |> List.length |> String.fromInt |> Html.text
-                , Html.text ")"
-                ]
-            , Html.ul
+            [ Html.ul
                 [ HA.class "hand"
                 , HA.style "margin" "0 0 0 0"
                 ]
@@ -212,6 +237,24 @@ init =
       }
     , shuffle gameDefinition
     )
+
+
+
+---- PROGRAM ----
+
+
+main : Program () Model Msg
+main =
+    Browser.element
+        { view = view
+        , init = \_ -> init
+        , update = update
+        , subscriptions = always Sub.none
+        }
+
+
+
+---- encoders / decoders ---------
 
 
 shuffle : { a | numberOfDecks : Int } -> Cmd Msg
@@ -268,17 +311,3 @@ modelDecoder =
     Decode.map2 Model
         (Decode.field "gameDefinition" gameDefinitionDecoder)
         (Decode.field "playState" playStateDecoder)
-
-
-
----- PROGRAM ----
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { view = view
-        , init = \_ -> init
-        , update = update
-        , subscriptions = always Sub.none
-        }
