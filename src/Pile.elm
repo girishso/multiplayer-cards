@@ -4,6 +4,8 @@ import Cards exposing (Card)
 import Html as Html exposing (Html)
 import Html.Attributes as HA
 import Id exposing (..)
+import Json.Decode as Decode exposing (field)
+import Json.Encode as Encode exposing (..)
 import List.Extra
 import Maybe.Extra
 import Types exposing (..)
@@ -118,6 +120,47 @@ updatePile pile piles =
 
         TwoWayPile pileId cardList ->
             List.Extra.updateAt (rawPileId pileId) (always pile) piles
+
+
+encoder : Pile -> Encode.Value
+encoder v =
+    let
+        pileEncoder kind cards pileId =
+            Encode.object
+                [ ( "kind", Encode.string kind )
+                , ( "id", pileId |> rawPileId |> Encode.int )
+                , ( "cards", Encode.list Cards.encoder cards )
+                ]
+    in
+    case v of
+        SimplePile pileId cards ->
+            pileEncoder "simple-pile" cards pileId
+
+        TwoWayPile pileId cards ->
+            pileEncoder "two-way-pile" cards pileId
+
+
+decoder : Decode.Decoder Pile
+decoder =
+    let
+        pileDecoder v =
+            Decode.map2 v
+                (Decode.field "id" (Decode.int |> Decode.map pileId))
+                (Decode.field "cards" (Decode.list Cards.decoder))
+    in
+    Decode.field "kind" Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "simple-pile" ->
+                        pileDecoder SimplePile
+
+                    "two-way-pile" ->
+                        pileDecoder TwoWayPile
+
+                    _ ->
+                        Decode.fail "Invalid Pile"
+            )
 
 
 

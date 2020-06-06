@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg(..), init, main, update, view)
+module Main exposing (..)
 
 import Browser
 import Cards exposing (Card)
@@ -8,6 +8,8 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import Id exposing (..)
+import Json.Decode as Decode exposing (field)
+import Json.Encode as Encode exposing (..)
 import List.Extra
 import Maybe.Extra
 import Pile exposing (Pile)
@@ -215,6 +217,61 @@ init =
 shuffle : { a | numberOfDecks : Int } -> Cmd Msg
 shuffle { numberOfDecks } =
     Random.generate ShuffleDeck (Deck.randomDeck numberOfDecks)
+
+
+playStateEncoder : PlayState -> Encode.Value
+playStateEncoder v =
+    Encode.object
+        [ ( "players"
+          , Encode.list Player.encoder v.players
+          )
+        , ( "piles"
+          , Encode.list Pile.encoder v.piles
+          )
+        ]
+
+
+playStateDecoder : Decode.Decoder PlayState
+playStateDecoder =
+    Decode.map2 PlayState
+        (Decode.field "players" (Decode.list Player.decoder))
+        (Decode.field "piles" (Decode.list Pile.decoder))
+
+
+gameDefinitionEncoder : GameDefinition -> Encode.Value
+gameDefinitionEncoder v =
+    Encode.object
+        [ ( "numberOfPlayers", Encode.int v.numberOfPlayers )
+        , ( "numberOfDecks", Encode.int v.numberOfDecks )
+        , ( "numberOfPiles", Encode.int v.numberOfPiles )
+        ]
+
+
+gameDefinitionDecoder : Decode.Decoder GameDefinition
+gameDefinitionDecoder =
+    Decode.map3 GameDefinition
+        (Decode.field "numberOfPlayers" Decode.int)
+        (Decode.field "numberOfDecks" Decode.int)
+        (Decode.field "numberOfPiles" Decode.int)
+
+
+modelEncoder : Model -> Encode.Value
+modelEncoder v =
+    Encode.object
+        [ ( "gameDefinition"
+          , gameDefinitionEncoder v.gameDefinition
+          )
+        , ( "playState"
+          , playStateEncoder v.playState
+          )
+        ]
+
+
+modelDecoder : Decode.Decoder (LocalState -> Model)
+modelDecoder =
+    Decode.map2 Model
+        (Decode.field "gameDefinition" gameDefinitionDecoder)
+        (Decode.field "playState" playStateDecoder)
 
 
 

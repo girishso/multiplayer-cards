@@ -4,7 +4,8 @@ import Html as Html exposing (Html)
 import Html.Attributes as HA
 import Html.Entity
 import Html.Events as HE
-import Json.Encode as JE
+import Json.Decode as Decode exposing (field)
+import Json.Encode as Encode exposing (..)
 import List exposing (..)
 import Random
 import Tuple exposing (..)
@@ -311,5 +312,143 @@ viewDropzoneActive hot onDrop card =
         ]
 
 
+setInnerHTML : String -> Html.Attribute msg
 setInnerHTML str =
-    HA.property "innerHTML" (JE.string str)
+    HA.property "innerHTML" (Encode.string str)
+
+
+decoder : Decode.Decoder Card
+decoder =
+    Decode.map2 Card
+        (Decode.field "suit"
+            (Decode.string
+                |> Decode.andThen
+                    (\string ->
+                        case string of
+                            "Clubs" ->
+                                Decode.succeed Clubs
+
+                            "Diamonds" ->
+                                Decode.succeed Diamonds
+
+                            "Hearts" ->
+                                Decode.succeed Hearts
+
+                            "Spades" ->
+                                Decode.succeed Spades
+
+                            _ ->
+                                Decode.fail "Invalid Suit"
+                    )
+            )
+        )
+        (Decode.field "rank"
+            (Decode.string
+                |> Decode.andThen
+                    (\string ->
+                        case string of
+                            "Ace" ->
+                                Decode.succeed Ace
+
+                            "Two" ->
+                                Decode.succeed Two
+
+                            "Three" ->
+                                Decode.succeed Three
+
+                            "Four" ->
+                                Decode.succeed Four
+
+                            "Five" ->
+                                Decode.succeed Five
+
+                            "Six" ->
+                                Decode.succeed Six
+
+                            "Seven" ->
+                                Decode.succeed Seven
+
+                            "Eight" ->
+                                Decode.succeed Eight
+
+                            "Nine" ->
+                                Decode.succeed Nine
+
+                            "Ten" ->
+                                Decode.succeed Ten
+
+                            "Jack" ->
+                                Decode.succeed Jack
+
+                            "Queen" ->
+                                Decode.succeed Queen
+
+                            "King" ->
+                                Decode.succeed King
+
+                            _ ->
+                                Decode.fail "Invalid Rank"
+                    )
+            )
+        )
+
+
+encoder : Card -> Encode.Value
+encoder v =
+    Encode.object
+        [ ( "suit"
+          , case v.suit of
+                Clubs ->
+                    Encode.string "Clubs"
+
+                Diamonds ->
+                    Encode.string "Diamonds"
+
+                Hearts ->
+                    Encode.string "Hearts"
+
+                Spades ->
+                    Encode.string "Spades"
+          )
+        , ( "rank"
+          , case v.rank of
+                Ace ->
+                    Encode.string "Ace"
+
+                Two ->
+                    Encode.string "Two"
+
+                Three ->
+                    Encode.string "Three"
+
+                Four ->
+                    Encode.string "Four"
+
+                Five ->
+                    Encode.string "Five"
+
+                Six ->
+                    Encode.string "Six"
+
+                Seven ->
+                    Encode.string "Seven"
+
+                Eight ->
+                    Encode.string "Eight"
+
+                Nine ->
+                    Encode.string "Nine"
+
+                Ten ->
+                    Encode.string "Ten"
+
+                Jack ->
+                    Encode.string "Jack"
+
+                Queen ->
+                    Encode.string "Queen"
+
+                King ->
+                    Encode.string "King"
+          )
+        ]
