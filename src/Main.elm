@@ -13,6 +13,7 @@ import Maybe.Extra
 import Pile exposing (Pile)
 import Player exposing (Player)
 import Random
+import Types
 
 
 
@@ -52,7 +53,7 @@ type alias LocalState =
 type Msg
     = ShuffleDeck Deck
     | CardSelected Player Card
-    | CardDroppedOnPile Pile Pile.HeadOrTail Card
+    | CardDroppedOnPile Pile Types.HeadOrTail Card
     | Shuffle
 
 
@@ -84,7 +85,11 @@ update msg ({ playState, gameDefinition, localState } as model) =
                             (\newPile -> Pile.updatePile newPile playState.piles)
                         |> (\( newPlayers, newPiles ) -> { players = newPlayers, piles = newPiles })
             in
-            ( setPlayState newPlayState model, Cmd.none )
+            ( model
+                |> setLocalState { localState | selectedCard = Nothing }
+                |> setPlayState newPlayState
+            , Cmd.none
+            )
 
         Shuffle ->
             ( model, shuffle gameDefinition )

@@ -6,17 +6,12 @@ import Html.Attributes as HA
 import Id exposing (..)
 import List.Extra
 import Maybe.Extra
+import Types exposing (..)
 
 
 type Pile
     = SimplePile (Id PileId) (List Card)
     | TwoWayPile (Id PileId) (List Card)
-
-
-type HeadOrTail
-    = Head
-    | Tail
-    | DoesntMatter
 
 
 newSimplePile : Int -> List Card -> Pile
@@ -78,25 +73,40 @@ nCards pile =
 view : (Card -> msg) -> (Pile -> HeadOrTail -> Card -> msg) -> Maybe Card -> Pile -> Html msg
 view onClickHandler onDrop maybeSelectedCard pile =
     let
-        viewPile cards =
+        viewDropzone hot =
+            Maybe.Extra.unwrap (Cards.viewDropzone hot) (Cards.viewDropzoneActive hot (onDrop pile hot)) maybeSelectedCard
+
+        viewSimplePile cards =
             Html.ul
-                [ HA.class "deck"
+                [ HA.class "twowaypile"
                 ]
                 (case cards of
                     [] ->
-                        [ Maybe.Extra.unwrap Cards.viewDropzone (Cards.viewDropzoneActive (onDrop pile DoesntMatter)) maybeSelectedCard ]
+                        [ viewDropzone DoesntMatter ]
 
                     _ ->
-                        Cards.viewCardsDiv onClickHandler cards
+                        Cards.viewCardsDiv onClickHandler cards ++ [ viewDropzone DoesntMatter ]
+                )
+
+        viewTwoWayPile cards =
+            Html.ul
+                [ HA.class "twowaypile"
+                ]
+                (case cards of
+                    [] ->
+                        [ viewDropzone DoesntMatter ]
+
+                    _ ->
+                        [ viewDropzone Head ] ++ Cards.viewCardsDiv onClickHandler cards ++ [ viewDropzone Tail ]
                 )
     in
     Html.div []
         [ case pile of
             SimplePile id cards ->
-                viewPile cards
+                viewSimplePile cards
 
             TwoWayPile id cards ->
-                viewPile cards
+                viewTwoWayPile cards
         ]
 
 

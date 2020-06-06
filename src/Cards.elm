@@ -8,6 +8,7 @@ import Json.Encode as JE
 import List exposing (..)
 import Random
 import Tuple exposing (..)
+import Types exposing (HeadOrTail)
 
 
 type Suit
@@ -292,19 +293,19 @@ viewBlank =
         ]
 
 
-viewDropzone : Html msg
-viewDropzone =
+viewDropzone : HeadOrTail -> Html msg
+viewDropzone hot =
     Html.li []
-        [ Html.span [ HA.class "card dropzone" ]
+        [ Html.span [ HA.class "card dropzone", HA.class (Types.headOrTailStr hot |> String.toLower) ]
             [ Html.text "*"
             ]
         ]
 
 
-viewDropzoneActive : (Card -> msg) -> Card -> Html msg
-viewDropzoneActive onDrop card =
+viewDropzoneActive : HeadOrTail -> (Card -> msg) -> Card -> Html msg
+viewDropzoneActive hot onDrop card =
     Html.li [ HE.onClick (onDrop card) ]
-        [ Html.span [ HA.class "card active dropzone" ]
+        [ Html.span [ HA.class "card active dropzone", HA.class (Types.headOrTailStr hot |> String.toLower) ]
             [ Html.text "*"
             ]
         ]
