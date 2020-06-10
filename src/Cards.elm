@@ -231,8 +231,8 @@ rankStr rank =
             "K"
 
 
-viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> (Card -> msg) -> Card -> Html msg
-viewCard2 innerWrapper onClickHandler ({ rank, suit } as card) =
+viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Maybe (Card -> msg) -> Card -> Html msg
+viewCard2 innerWrapper maybeOnClickHandler ({ rank, suit } as card) =
     let
         ( suite, face, suitesEnyity ) =
             case suit of
@@ -248,10 +248,13 @@ viewCard2 innerWrapper onClickHandler ({ rank, suit } as card) =
                 Hearts ->
                     ( "hearts", rankStr rank, Html.Entity.hearts )
 
+        attrs =
+            maybeOnClickHandler |> Maybe.map (\x -> [ HE.onClick (x card) ]) |> Maybe.withDefault []
+
         -- Back ->
         --     ( "back", "", Html.Entity.nbsp )
     in
-    Html.li [ HE.onClick (onClickHandler card) ]
+    Html.li attrs
         [ innerWrapper [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
             [ Html.span [ HA.class "rank" ] [ Html.text face ]
             , Html.span [ HA.class "suit" ]
@@ -262,31 +265,48 @@ viewCard2 innerWrapper onClickHandler ({ rank, suit } as card) =
 
 viewA : (Card -> msg) -> Card -> Html msg
 viewA onClickHandler card =
-    viewCard2 Html.a onClickHandler card
+    viewCard2 Html.a (Just onClickHandler) card
 
 
 viewSpan : (Card -> msg) -> Card -> Html msg
 viewSpan onClickHandler card =
-    viewCard2 Html.span onClickHandler card
+    viewCard2 Html.span (Just onClickHandler) card
+
+
+viewSpanNoClick : Card -> Html msg
+viewSpanNoClick card =
+    viewCard2 Html.span Nothing card
 
 
 viewDiv : (Card -> msg) -> Card -> Html msg
 viewDiv onClickHandler card =
-    viewCard2 Html.div onClickHandler card
+    viewCard2 Html.div (Just onClickHandler) card
 
 
 viewLabel : (Card -> msg) -> Card -> Html msg
 viewLabel onClickHandler card =
-    viewCard2 Html.label onClickHandler card
+    viewCard2 Html.label (Just onClickHandler) card
 
 
-viewCardsDiv : (Card -> msg) -> List Card -> List (Html msg)
-viewCardsDiv onClickHandler cardsList =
-    List.map (viewDiv onClickHandler) (List.take 10 cardsList)
+
+--
+-- viewCardsDiv : (Card -> msg) -> List Card -> List (Html msg)
+-- viewCardsDiv onClickHandler cardsList =
+--     List.map (viewDiv onClickHandler) (List.take 10 cardsList)
+--
 
 
-viewBlank : Html msg
-viewBlank =
+viewBlank : Card -> Html msg
+viewBlank _ =
+    Html.li []
+        [ Html.span [ HA.class "card blank" ]
+            [ Html.text "*"
+            ]
+        ]
+
+
+viewDropzoneBlank : Html msg
+viewDropzoneBlank =
     Html.li []
         [ Html.span [ HA.class "card blank" ]
             [ Html.text "*"

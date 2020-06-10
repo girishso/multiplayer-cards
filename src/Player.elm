@@ -1,6 +1,7 @@
 module Player exposing (..)
 
 import Cards exposing (Card)
+import Html exposing (..)
 import Id exposing (..)
 import Json.Decode as Decode exposing (field)
 import Json.Encode as Encode exposing (..)
@@ -35,6 +36,21 @@ dropCardOnPile : Card -> Types.HeadOrTail -> Pile -> Player -> ( Player, Pile )
 dropCardOnPile card headOrTail pile player =
     ( takeCard card player, Pile.add card headOrTail pile )
         |> Debug.log "dropCardOnPile"
+
+
+viewA : (Card -> msg) -> { a | cards : List Card } -> List (Html msg)
+viewA cardSelectedMsg player =
+    List.map (Cards.viewA cardSelectedMsg) player.cards
+
+
+viewSpanNoClick : { a | cards : List Card } -> List (Html msg)
+viewSpanNoClick player =
+    List.map Cards.viewSpanNoClick player.cards
+
+
+viewBack : { a | cards : List Card } -> List (Html msg)
+viewBack player =
+    List.map Cards.viewBlank player.cards
 
 
 encoder : Player -> Encode.Value

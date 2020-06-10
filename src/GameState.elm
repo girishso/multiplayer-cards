@@ -12,7 +12,7 @@ module GameState exposing
     , updateScore
     )
 
-import Main exposing (numberOfPlayers)
+import Main exposing (LocalState, numberOfPlayers)
 import StateMachine exposing (Allowed, State(..))
 
 
@@ -36,14 +36,19 @@ type alias PlayState =
 
 
 type Game
-    = DefineGame (State { defining : Allowed } {})
-    | SetupPlayer (State { inPlay : Allowed } { definition : GameDefinition })
-    | Ready (State { inPlay : Allowed } { definition : GameDefinition })
-    | InPlay (State { gameOver : Allowed } { definition : GameDefinition, play : PlayState })
-    | GameOver (State { ready : Allowed } { definition : GameDefinition, finalScore : Int })
+    = StartingNewGame (State { waiting : Allowed }) {}
+    | Waiting (State { playing : Allowed } { definition : GameDefinition })
+    | Playing (State { restarting : Allowed, gameOver : Allowed } { definition : GameDefinition, play : PlayState })
+    | Restarting (State { playing : Allowed } { definition : GameDefinition })
+    | GameOver (State { restarting : Allowed }) { winner : Player }
 
 
 
+-- = DefineGame (State { defining : Allowed } {})
+-- | SetupPlayer (State { inPlay : Allowed } { definition : GameDefinition })
+-- | Ready (State { inPlay : Allowed } { definition : GameDefinition })
+-- | InPlay (State { gameOver : Allowed } { definition : GameDefinition, play : PlayState })
+-- | GameOver (State { ready : Allowed } { definition : GameDefinition, finalScore : Int })
 -- State constructors.
 
 

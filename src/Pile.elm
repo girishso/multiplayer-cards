@@ -87,7 +87,7 @@ view onClickHandler onDrop maybeSelectedCard pile =
                         [ viewDropzone DoesntMatter ]
 
                     _ ->
-                        Cards.viewCardsDiv onClickHandler cards ++ [ viewDropzone DoesntMatter ]
+                        view_ onClickHandler cards ++ [ viewDropzone DoesntMatter ]
                 )
 
         viewTwoWayPile cards =
@@ -99,7 +99,54 @@ view onClickHandler onDrop maybeSelectedCard pile =
                         [ viewDropzone DoesntMatter ]
 
                     _ ->
-                        [ viewDropzone Head ] ++ Cards.viewCardsDiv onClickHandler cards ++ [ viewDropzone Tail ]
+                        [ viewDropzone Head ] ++ view_ onClickHandler cards ++ [ viewDropzone Tail ]
+                )
+    in
+    Html.div []
+        [ case pile of
+            SimplePile id cards ->
+                viewSimplePile cards
+
+            TwoWayPile id cards ->
+                viewTwoWayPile cards
+        ]
+
+
+view_ : (Card -> msg) -> List Card -> List (Html msg)
+view_ onClickHandler cardsList =
+    List.map (Cards.viewSpan onClickHandler) (List.take 10 cardsList)
+
+
+viewOnly_ : List Card -> List (Html msg)
+viewOnly_ cards =
+    List.map Cards.viewSpanNoClick cards
+
+
+viewOnly : Pile -> Html msg
+viewOnly pile =
+    let
+        viewSimplePile cards =
+            Html.ul
+                [ HA.class "twowaypile"
+                ]
+                (case cards of
+                    [] ->
+                        [ Cards.viewDropzoneBlank ]
+
+                    _ ->
+                        viewOnly_ cards
+                )
+
+        viewTwoWayPile cards =
+            Html.ul
+                [ HA.class "twowaypile"
+                ]
+                (case cards of
+                    [] ->
+                        [ Cards.viewDropzoneBlank ]
+
+                    _ ->
+                        viewOnly_ cards
                 )
     in
     Html.div []
