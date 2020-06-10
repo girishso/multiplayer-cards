@@ -113,8 +113,8 @@ view onClickHandler onDrop maybeSelectedCard pile =
 
 
 view_ : (Card -> msg) -> List Card -> List (Html msg)
-view_ onClickHandler cardsList =
-    List.map (Cards.viewSpan onClickHandler) (List.take 10 cardsList)
+view_ onClickHandler cards =
+    List.map (Cards.viewSpan onClickHandler) cards
 
 
 viewOnly_ : List Card -> List (Html msg)

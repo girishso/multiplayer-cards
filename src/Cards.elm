@@ -7,6 +7,7 @@ import Html.Events as HE
 import Json.Decode as Decode exposing (field)
 import Json.Encode as Encode exposing (..)
 import List exposing (..)
+import Maybe.Extra
 import Random
 import Tuple exposing (..)
 import Types exposing (HeadOrTail)
@@ -231,8 +232,20 @@ rankStr rank =
             "K"
 
 
-viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Maybe (Card -> msg) -> Card -> Html msg
-viewCard2 innerWrapper maybeOnClickHandler ({ rank, suit } as card) =
+eql : Card -> Card -> Bool
+eql a b =
+    (a.suit == b.suit) && (a.rank == b.rank)
+
+
+maybeEql : Maybe Card -> Card -> Bool
+maybeEql ma b =
+    ma
+        |> Maybe.map (\a -> (a.suit == b.suit) && (a.rank == b.rank))
+        |> Maybe.withDefault False
+
+
+viewCard2 : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> Maybe (Card -> msg) -> Maybe Card -> Card -> Html msg
+viewCard2 innerWrapper maybeOnClickHandler maybeSelectedCard ({ rank, suit } as card) =
     let
         ( suite, face, suitesEnyity ) =
             case suit of
@@ -251,11 +264,18 @@ viewCard2 innerWrapper maybeOnClickHandler ({ rank, suit } as card) =
         attrs =
             maybeOnClickHandler |> Maybe.map (\x -> [ HE.onClick (x card) ]) |> Maybe.withDefault []
 
+        classes =
+            HA.classList
+                [ ( "rank-" ++ String.toLower face, True )
+                , ( suite, True )
+                , ( "selected", maybeEql maybeSelectedCard card )
+                ]
+
         -- Back ->
         --     ( "back", "", Html.Entity.nbsp )
     in
     Html.li attrs
-        [ innerWrapper [ HA.class "card", HA.class ("rank-" ++ String.toLower face), HA.class suite ]
+        [ innerWrapper [ HA.class "card", classes ]
             [ Html.span [ HA.class "rank" ] [ Html.text face ]
             , Html.span [ HA.class "suit" ]
                 [ Html.text suitesEnyity ]
@@ -263,32 +283,33 @@ viewCard2 innerWrapper maybeOnClickHandler ({ rank, suit } as card) =
         ]
 
 
-viewA : (Card -> msg) -> Card -> Html msg
-viewA onClickHandler card =
-    viewCard2 Html.a (Just onClickHandler) card
+viewA : (Card -> msg) -> Maybe Card -> Card -> Html msg
+viewA onClickHandler maybeSelectedCard card =
+    viewCard2 Html.a (Just onClickHandler) maybeSelectedCard card
 
 
 viewSpan : (Card -> msg) -> Card -> Html msg
 viewSpan onClickHandler card =
-    viewCard2 Html.span (Just onClickHandler) card
+    viewCard2 Html.span (Just onClickHandler) Nothing card
 
 
 viewSpanNoClick : Card -> Html msg
 viewSpanNoClick card =
-    viewCard2 Html.span Nothing card
-
-
-viewDiv : (Card -> msg) -> Card -> Html msg
-viewDiv onClickHandler card =
-    viewCard2 Html.div (Just onClickHandler) card
-
-
-viewLabel : (Card -> msg) -> Card -> Html msg
-viewLabel onClickHandler card =
-    viewCard2 Html.label (Just onClickHandler) card
+    viewCard2 Html.span Nothing Nothing card
 
 
 
+--
+-- viewDiv : (Card -> msg) -> Card -> Html msg
+-- viewDiv onClickHandler card =
+--     viewCard2 Html.div (Just onClickHandler) card
+--
+--
+-- viewLabel : (Card -> msg) -> Card -> Html msg
+-- viewLabel onClickHandler card =
+--     viewCard2 Html.label (Just onClickHandler) card
+--
+--
 --
 -- viewCardsDiv : (Card -> msg) -> List Card -> List (Html msg)
 -- viewCardsDiv onClickHandler cardsList =
@@ -300,6 +321,15 @@ viewBlank : Card -> Html msg
 viewBlank _ =
     Html.li []
         [ Html.span [ HA.class "card blank" ]
+            [ Html.text "*"
+            ]
+        ]
+
+
+viewBack : Card -> Html msg
+viewBack _ =
+    Html.li []
+        [ Html.span [ HA.class "card back" ]
             [ Html.text "*"
             ]
         ]

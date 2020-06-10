@@ -38,9 +38,9 @@ dropCardOnPile card headOrTail pile player =
         |> Debug.log "dropCardOnPile"
 
 
-viewA : (Card -> msg) -> { a | cards : List Card } -> List (Html msg)
-viewA cardSelectedMsg player =
-    List.map (Cards.viewA cardSelectedMsg) player.cards
+viewA : (Card -> msg) -> Maybe Card -> { a | cards : List Card } -> List (Html msg)
+viewA cardSelectedMsg maybeSelectedCard player =
+    List.map (Cards.viewA cardSelectedMsg maybeSelectedCard) player.cards
 
 
 viewSpanNoClick : { a | cards : List Card } -> List (Html msg)
@@ -50,7 +50,7 @@ viewSpanNoClick player =
 
 viewBack : { a | cards : List Card } -> List (Html msg)
 viewBack player =
-    List.map Cards.viewBlank player.cards
+    List.map Cards.viewBack player.cards
 
 
 encoder : Player -> Encode.Value

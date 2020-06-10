@@ -94,7 +94,7 @@ update msg ({ playState, gameDefinition, localState } as model) =
                            )
             in
             ( model
-                |> setLocalState { localState | selectedCard = Nothing }
+                |> setLocalState { localState | selectedCard = Nothing, selfPlayerIx = setNextPlayerIx newPlayState.players localState.selfPlayerIx }
                 |> setPlayState newPlayState
             , Cmd.none
             )
@@ -211,7 +211,7 @@ viewPile ({ localState, playState } as model) pile =
                         Pile.viewOnly pile
     in
     Html.div []
-        [ Html.div [ HA.class "pile playingCards faceImages" ]
+        [ Html.div [ HA.class "pile playingCards faceImages suitTop" ]
             (viewPile_ pile)
         ]
 
@@ -222,7 +222,7 @@ viewPlayer localState playState playerIx player =
         viewCards =
             case ( playerIx == localState.selfPlayerIx, isSelfPlayersTurn playState localState ) of
                 ( True, True ) ->
-                    Player.viewA CardSelected player
+                    Player.viewA CardSelected localState.selectedCard player
 
                 ( True, False ) ->
                     Player.viewSpanNoClick player
