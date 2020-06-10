@@ -1,6 +1,8 @@
 module Main exposing (..)
 
 import Browser
+import Browser.Dom
+import Browser.Events
 import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
 import Helpers
@@ -15,6 +17,8 @@ import Maybe.Extra
 import Pile exposing (Pile)
 import Player exposing (Player)
 import Random
+import Task
+import Time
 import Types
 
 
@@ -46,6 +50,8 @@ type alias PlayState =
 type alias LocalState =
     { selfPlayerIx : Int
     , selectedCard : Maybe Card
+    , windowHeight : Int
+    , windowWidth : Int
     }
 
 
@@ -58,6 +64,9 @@ type Msg
     | CardSelected Card
     | CardDroppedOnPile Pile Types.HeadOrTail Card
     | Shuffle
+    | WindowResized Int Int
+    | OnTime Time.Posix
+    | OnViewport Browser.Dom.Viewport
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -71,17 +80,10 @@ update msg ({ playState, gameDefinition, localState } as model) =
             ( setPlayState { playState | players = players } model, Cmd.none )
 
         CardSelected card ->
-            let
-                _ =
-                    Debug.log "card" card
-            in
             ( setLocalState { localState | selectedCard = Just card } model, Cmd.none )
 
         CardDroppedOnPile pile headOrTail card ->
             let
-                _ =
-                    Debug.log "pile headOrTail card" ( pile, headOrTail, card )
-
                 newPlayState =
                     Player.dropCardOnPile card headOrTail pile (getCurrentPlayer playState)
                         |> Tuple.mapBoth (\newPlayer -> List.Extra.updateAt (rawPlayerId newPlayer.id) (always newPlayer) playState.players)
@@ -101,6 +103,27 @@ update msg ({ playState, gameDefinition, localState } as model) =
 
         Shuffle ->
             ( model, shuffle gameDefinition )
+
+        WindowResized w h ->
+            let
+                _ =
+                    Debug.log "WindowResized" ( w, h )
+            in
+            ( model |> setLocalState { localState | windowWidth = w, windowHeight = h }, Cmd.none )
+
+        OnViewport viewport ->
+            let
+                _ =
+                    Debug.log "viewport" viewport
+            in
+            ( model, Cmd.none )
+
+        OnTime posix ->
+            let
+                _ =
+                    Debug.log "posix" posix
+            in
+            ( model, Cmd.none )
 
 
 setNextPlayerIx : List Player -> Int -> Int
@@ -134,7 +157,7 @@ isCardSelected { localState } =
 
 isSelfPlayersTurn : PlayState -> LocalState -> Bool
 isSelfPlayersTurn playState localState =
-    localState.selfPlayerIx == playState.currentPlayerIx |> Debug.log "isSelfPlayersTurn"
+    localState.selfPlayerIx == playState.currentPlayerIx
 
 
 getSelectedCard : Model -> Maybe Card
@@ -162,40 +185,55 @@ getCurrentPlayer playState =
 
 view : Model -> Html Msg
 view ({ playState, gameDefinition, localState } as model) =
-    -- Html.div
-    --     [ HA.class "main" ]
-    --     [ table [ HA.class "main-table" ]
-    --         [ tr [ HA.class "top-row" ]
-    --             [ td [ HA.colspan 3 ] [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
-    --             ]
-    --         , tr [ HA.class "top-player-row" ]
-    --             [ td [ HA.colspan 3 ]
-    --                 [ div [] (List.filter (\p -> rawPlayerId p.id == 2) playState.players |> List.map viewPlayer)
-    --                 ]
-    --             ]
-    --         , tr [ HA.class "middle-row" ]
-    --             [ td [ HA.class "mid-left rotate-270" ]
-    --                 [ div [] (List.filter (\p -> rawPlayerId p.id == 3) playState.players |> List.map viewPlayer)
-    --                 ]
-    --             , td [ HA.class "mid-mid" ] (List.map (viewPile model) playState.piles)
-    --             , td [ HA.class "mid-right rotate-90" ]
-    --                 [ div [] (List.filter (\p -> rawPlayerId p.id == 1) playState.players |> List.map viewPlayer)
-    --                 ]
-    --             ]
-    --         , tr [ HA.class "bottom-player-row" ]
-    --             [ td [ HA.colspan 3 ]
-    --                 [ div [] (List.filter (\p -> rawPlayerId p.id == 0) playState.players |> List.map viewPlayer)
-    --                 ]
-    --             ]
-    --         ]
-    --     ]
     Html.div
         [ HA.class "main" ]
-        [ Html.div [ HA.class "piles" ]
-            (List.map (viewPile model) playState.piles)
-        , Html.div [ HA.class "players" ]
-            (List.indexedMap (viewPlayer localState playState) playState.players)
+        [ table [ HA.class "main-table" ]
+            [ tr [ HA.class "top-row" ]
+                [ td [ HA.colspan 3 ] [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
+                ]
+            , tr [ HA.class "top-player-row" ]
+                [ td [ HA.colspan 3 ]
+                    [ div []
+                        (List.filter (\p -> rawPlayerId p.id == 2) playState.players
+                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                        )
+                    ]
+                ]
+            , tr [ HA.class "middle-row" ]
+                [ td [ HA.class "mid-left rotate-270" ]
+                    [ div []
+                        (List.filter (\p -> rawPlayerId p.id == 3) playState.players
+                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                        )
+                    ]
+                , td [ HA.class "mid-mid" ] (List.map (viewPile model) playState.piles)
+                , td [ HA.class "mid-right rotate-90" ]
+                    [ div []
+                        (List.filter (\p -> rawPlayerId p.id == 1) playState.players
+                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                        )
+                    ]
+                ]
+            , tr [ HA.class "bottom-player-row" ]
+                [ td [ HA.colspan 3 ]
+                    [ div []
+                        (List.filter (\p -> rawPlayerId p.id == 0) playState.players
+                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                        )
+                    ]
+                ]
+            ]
         ]
+
+
+
+-- Html.div
+--     [ HA.class "main" ]
+--     [ Html.div [ HA.class "piles" ]
+--         (List.map (viewPile model) playState.piles)
+--     , Html.div [ HA.class "players" ]
+--         (List.indexedMap (viewPlayer localState playState) playState.players)
+--     ]
 
 
 viewPile : Model -> Pile -> Html Msg
@@ -265,6 +303,8 @@ initLocalState : PlayState -> LocalState
 initLocalState { players } =
     { selfPlayerIx = 0
     , selectedCard = Nothing
+    , windowHeight = 0
+    , windowWidth = 0
     }
 
 
@@ -281,11 +321,17 @@ init =
       , playState = playState
       , localState = initLocalState playState
       }
-    , shuffle gameDefinition
+    , Cmd.batch [ shuffle gameDefinition, getWindowSize ]
     )
 
 
+getWindowSize : Cmd Msg
+getWindowSize =
+    Task.perform OnViewport Browser.Dom.getViewport
 
+
+
+-- Task.perform OnTime Time.now
 ---- PROGRAM ----
 
 
@@ -295,8 +341,13 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subs
         }
+
+
+subs : Model -> Sub Msg
+subs _ =
+    Browser.Events.onResize WindowResized
 
 
 
