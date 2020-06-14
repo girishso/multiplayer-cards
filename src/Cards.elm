@@ -288,6 +288,11 @@ viewA onClickHandler maybeSelectedCard card =
     viewCard2 Html.a (Just onClickHandler) maybeSelectedCard card
 
 
+viewSpanWithClick : (Card -> msg) -> Maybe Card -> Card -> Html msg
+viewSpanWithClick onClickHandler maybeSelectedCard card =
+    viewCard2 Html.label (Just onClickHandler) maybeSelectedCard card
+
+
 viewSpan : (Card -> msg) -> Card -> Html msg
 viewSpan onClickHandler card =
     viewCard2 Html.span (Just onClickHandler) Nothing card

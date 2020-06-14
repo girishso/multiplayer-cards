@@ -43,6 +43,11 @@ viewA cardSelectedMsg maybeSelectedCard player =
     List.map (Cards.viewA cardSelectedMsg maybeSelectedCard) player.cards
 
 
+viewSpanWithClick : (Card -> msg) -> Maybe Card -> { a | cards : List Card } -> List (Html msg)
+viewSpanWithClick cardSelectedMsg maybeSelectedCard player =
+    List.map (Cards.viewSpanWithClick cardSelectedMsg maybeSelectedCard) player.cards
+
+
 viewSpanNoClick : { a | cards : List Card } -> List (Html msg)
 viewSpanNoClick player =
     List.map Cards.viewSpanNoClick player.cards

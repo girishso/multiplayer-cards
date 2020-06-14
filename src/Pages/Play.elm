@@ -250,7 +250,7 @@ viewPlayer localState playState playerIx player =
         viewCards =
             case ( playerIx == localState.selfPlayerIx, isSelfPlayersTurn playState localState ) of
                 ( True, True ) ->
-                    Player.viewA CardSelected localState.selectedCard player
+                    Player.viewSpanWithClick CardSelected localState.selectedCard player
 
                 ( True, False ) ->
                     Player.viewSpanNoClick player
