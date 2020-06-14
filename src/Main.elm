@@ -6,6 +6,7 @@ import Browser.Events
 import Browser.Navigation as Nav exposing (Key)
 import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
+import Global
 import Helpers
 import Html exposing (..)
 import Html.Attributes as HA
@@ -15,9 +16,11 @@ import Json.Decode as Decode exposing (field)
 import Json.Encode as Encode exposing (..)
 import List.Extra
 import Maybe.Extra
+import Pages.Pages as Pages
 import Pile exposing (Pile)
 import Player exposing (Player)
 import Random
+import Route as Route exposing (Route)
 import Task
 import Time
 import Types
@@ -34,6 +37,8 @@ type alias Model =
     , localState : LocalState
     , key : Key
     , url : Url
+    , global : Global.Model
+    , page : Pages.Model
     }
 
 
@@ -49,6 +54,10 @@ type alias PlayState =
     , piles : List Pile
     , currentPlayerIx : Int
     }
+
+
+type alias Flags =
+    ()
 
 
 type alias LocalState =
@@ -73,22 +82,38 @@ type Msg
     | OnViewport Browser.Dom.Viewport
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url
+    | PagesMsg Pages.Msg
+    | GlobalMsg Global.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ playState, gameDefinition, localState } as model) =
     case msg of
-        LinkClicked urlRequest ->
-            case urlRequest of
-                Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+        LinkClicked (Browser.Internal url) ->
+            ( model, Nav.pushUrl model.key (Url.toString url) )
 
-                Browser.External href ->
-                    ( model, Nav.load href )
+        LinkClicked (Browser.External href) ->
+            ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url }
-            , Cmd.none
+            let
+                ( page, pageCmd, globalCmd ) =
+                    Pages.init (fromUrl url) model.global
+            in
+            ( { model | url = url, page = page }
+            , Cmd.batch
+                [ Cmd.map PagesMsg pageCmd
+                , Cmd.map GlobalMsg globalCmd
+                ]
+            )
+
+        GlobalMsg globalMsg ->
+            let
+                ( global, globalCmd ) =
+                    Global.update globalMsg model.global
+            in
+            ( { model | global = global }
+            , Cmd.map GlobalMsg globalCmd
             )
 
         ShuffleDeck deck ->
@@ -143,6 +168,18 @@ update msg ({ playState, gameDefinition, localState } as model) =
                     Debug.log "posix" posix
             in
             ( model, Cmd.none )
+
+        PagesMsg pageMsg ->
+            let
+                ( page, pageCmd, globalCmd ) =
+                    Pages.update pageMsg model.page model.global
+            in
+            ( { model | page = page }
+            , Cmd.batch
+                [ Cmd.map PagesMsg pageCmd
+                , Cmd.map GlobalMsg globalCmd
+                ]
+            )
 
 
 setNextPlayerIx : List Player -> Int -> Int
@@ -218,7 +255,26 @@ mainDivsHelper { w, h, t, l, c } =
 
 
 view : Model -> Browser.Document Msg
-view ({ playState, gameDefinition, localState } as model) =
+view model =
+    let
+        documentMap :
+            (msg1 -> msg2)
+            -> Browser.Document msg1
+            -> Browser.Document msg2
+        documentMap fn doc =
+            { title = doc.title
+            , body = List.map (Html.map fn) doc.body
+            }
+    in
+    Global.view
+        { page = Pages.view model.page model.global |> documentMap PagesMsg
+        , global = model.global
+        , toMsg = GlobalMsg
+        }
+
+
+view_ : Model -> Browser.Document Msg
+view_ ({ playState, gameDefinition, localState } as model) =
     { title = "URL Interceptor"
     , body =
         [ Html.div
@@ -330,7 +386,7 @@ initLocalState { players } =
     }
 
 
-init : flags -> Url -> Key -> ( Model, Cmd Msg )
+init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         gameDefinition =
@@ -338,15 +394,42 @@ init flags url key =
 
         playState =
             initPlayState gameDefinition
+
+        ( global, globalCmd ) =
+            Global.init flags url key
+
+        ( page, pageCmd, pageGlobalCmd ) =
+            Pages.init (fromUrl url) global
     in
     ( { gameDefinition = gameDefinition
       , playState = playState
       , localState = initLocalState playState
       , url = url
       , key = key
+      , global = global
+      , page = page
       }
-    , Cmd.batch [ shuffle gameDefinition, getWindowSize ]
+    , Cmd.batch
+        [ shuffle gameDefinition
+        , getWindowSize
+        , Cmd.map GlobalMsg globalCmd
+        , Cmd.map GlobalMsg pageGlobalCmd
+        , Cmd.map PagesMsg pageCmd
+        ]
     )
+
+
+
+-- let
+--
+--     in
+--     ( Model key url global page
+--     , Cmd.batch
+--         [ Cmd.map Global globalCmd
+--         , Cmd.map Global pageGlobalCmd
+--         , Cmd.map Page pageCmd
+--         ]
+--     )
 
 
 getWindowSize : Cmd Msg
@@ -359,7 +442,7 @@ getWindowSize =
 ---- PROGRAM ----
 
 
-main : Program Decode.Value Model Msg
+main : Program Flags Model Msg
 main =
     Browser.application
         { view = view
@@ -437,3 +520,8 @@ gameDefinitionDecoder =
 --     Decode.map2 Model
 --         (Decode.field "gameDefinition" gameDefinitionDecoder)
 --         (Decode.field "playState" playStateDecoder)
+
+
+fromUrl : Url -> Route
+fromUrl =
+    Route.fromUrl >> Maybe.withDefault Route.NotFound
