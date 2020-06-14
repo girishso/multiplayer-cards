@@ -22,14 +22,17 @@ layout { page } =
 navbar : Html msg
 navbar =
     header [ class "row center-y spacing--between" ]
-        [ a [ class "link font--h5", href (Route.toHref Route.Top) ] [ text "home" ]
+        [ a [ class "link font--h5", href (Route.toHref Route.Top) ] [ text "Home" ]
+        , text "|"
         , div [ class "row center-y spacing--medium" ]
-            [ a [ class "link", href (Route.toHref Route.NotFound) ] [ text "a broken link" ]
-            , a [ class "button", href "https://twitter.com/intent/tweet?text=elm-spa is ez pz" ] [ text "tweet about it" ]
+            [ text "|"
+            , a [ class "link", href (Route.toHref Route.NotFound) ] [ text "A broken link" ]
+            , text "|"
+            , a [ class "link", href (Route.toHref Route.Play) ] [ text "Play" ]
             ]
         ]
 
 
 footer : Html msg
 footer =
-    Html.footer [] [ text "built with elm ❤" ]
+    Html.footer [] []
