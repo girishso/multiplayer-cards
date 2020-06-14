@@ -3,6 +3,7 @@ module Main exposing (..)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Browser.Navigation as Nav exposing (Key)
 import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
 import Helpers
@@ -20,6 +21,7 @@ import Random
 import Task
 import Time
 import Types
+import Url exposing (Url)
 
 
 
@@ -30,6 +32,8 @@ type alias Model =
     { gameDefinition : GameDefinition
     , playState : PlayState
     , localState : LocalState
+    , key : Key
+    , url : Url
     }
 
 
@@ -67,11 +71,26 @@ type Msg
     | WindowResized Int Int
     | OnTime Time.Posix
     | OnViewport Browser.Dom.Viewport
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ playState, gameDefinition, localState } as model) =
     case msg of
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            ( { model | url = url }
+            , Cmd.none
+            )
+
         ShuffleDeck deck ->
             let
                 players =
@@ -198,31 +217,35 @@ mainDivsHelper { w, h, t, l, c } =
     ]
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view ({ playState, gameDefinition, localState } as model) =
-    Html.div
-        [ HA.class "main" ]
-        [ div
-            (mainDivsHelper { w = 100, h = 10, t = 0, l = 0, c = "top-row" })
-            [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
-        , div (mainDivsHelper { w = 100, h = 32, t = 10, l = 0, c = "top-player-row player-container" })
-            (List.filter (\p -> rawPlayerId p.id == 2) playState.players
-                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-            )
-        , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 2, c = "mid-player-left rotate-270 player-container" })
-            (List.filter (\p -> rawPlayerId p.id == 3) playState.players
-                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-            )
-        , div (mainDivsHelper { w = 60, h = 50, t = 30, l = 20, c = "piles-container" }) (List.map (viewPile model) playState.piles)
-        , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 77, c = "mid-player-right rotate-90 player-container" })
-            (List.filter (\p -> rawPlayerId p.id == 1) playState.players
-                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-            )
-        , div (mainDivsHelper { w = 100, h = 30, t = 70, l = 0, c = "bottom-player-row player-container" })
-            (List.filter (\p -> rawPlayerId p.id == 0) playState.players
-                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-            )
+    { title = "URL Interceptor"
+    , body =
+        [ Html.div
+            [ HA.class "main" ]
+            [ div
+                (mainDivsHelper { w = 100, h = 10, t = 0, l = 0, c = "top-row" })
+                [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
+            , div (mainDivsHelper { w = 100, h = 32, t = 10, l = 0, c = "top-player-row player-container" })
+                (List.filter (\p -> rawPlayerId p.id == 2) playState.players
+                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                )
+            , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 2, c = "mid-player-left rotate-270 player-container" })
+                (List.filter (\p -> rawPlayerId p.id == 3) playState.players
+                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                )
+            , div (mainDivsHelper { w = 60, h = 50, t = 30, l = 20, c = "piles-container" }) (List.map (viewPile model) playState.piles)
+            , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 77, c = "mid-player-right rotate-90 player-container" })
+                (List.filter (\p -> rawPlayerId p.id == 1) playState.players
+                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                )
+            , div (mainDivsHelper { w = 100, h = 30, t = 70, l = 0, c = "bottom-player-row player-container" })
+                (List.filter (\p -> rawPlayerId p.id == 0) playState.players
+                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                )
+            ]
         ]
+    }
 
 
 
@@ -307,8 +330,8 @@ initLocalState { players } =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : flags -> Url -> Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         gameDefinition =
             initGameDefinition
@@ -319,6 +342,8 @@ init =
     ( { gameDefinition = gameDefinition
       , playState = playState
       , localState = initLocalState playState
+      , url = url
+      , key = key
       }
     , Cmd.batch [ shuffle gameDefinition, getWindowSize ]
     )
@@ -334,13 +359,15 @@ getWindowSize =
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Decode.Value Model Msg
 main =
-    Browser.element
+    Browser.application
         { view = view
-        , init = \_ -> init
+        , init = init
         , update = update
         , subscriptions = subs
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
         }
 
 
@@ -395,16 +422,18 @@ gameDefinitionDecoder =
         (Decode.field "numberOfPiles" Decode.int)
 
 
-modelEncoder : Model -> Encode.Value
-modelEncoder v =
-    Encode.object
-        [ ( "gameDefinition", gameDefinitionEncoder v.gameDefinition )
-        , ( "playState", playStateEncoder v.playState )
-        ]
 
-
-modelDecoder : Decode.Decoder (LocalState -> Model)
-modelDecoder =
-    Decode.map2 Model
-        (Decode.field "gameDefinition" gameDefinitionDecoder)
-        (Decode.field "playState" playStateDecoder)
+--
+-- modelEncoder : Model -> Encode.Value
+-- modelEncoder v =
+--     Encode.object
+--         [ ( "gameDefinition", gameDefinitionEncoder v.gameDefinition )
+--         , ( "playState", playStateEncoder v.playState )
+--         ]
+--
+--
+-- modelDecoder : Decode.Decoder (LocalState -> Model)
+-- modelDecoder =
+--     Decode.map2 Model
+--         (Decode.field "gameDefinition" gameDefinitionDecoder)
+--         (Decode.field "playState" playStateDecoder)
