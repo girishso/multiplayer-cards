@@ -183,46 +183,45 @@ getCurrentPlayer playState =
 ---- VIEW ----
 
 
+mainDivsHelper : { h : Int, l : Int, t : Int, w : Int, c : String } -> List (Attribute msg)
+mainDivsHelper { w, h, t, l, c } =
+    let
+        toPercent i =
+            String.fromInt i ++ "%"
+    in
+    [ HA.style "width" (toPercent w)
+    , HA.style "height" (toPercent h)
+    , HA.style "top" (toPercent t)
+    , HA.style "left" (toPercent l)
+    , HA.style "position" "absolute"
+    , HA.class c
+    ]
+
+
 view : Model -> Html Msg
 view ({ playState, gameDefinition, localState } as model) =
     Html.div
         [ HA.class "main" ]
-        [ table [ HA.class "main-table" ]
-            [ tr [ HA.class "top-row" ]
-                [ td [ HA.colspan 3 ] [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
-                ]
-            , tr [ HA.class "top-player-row" ]
-                [ td [ HA.colspan 3 ]
-                    [ div []
-                        (List.filter (\p -> rawPlayerId p.id == 2) playState.players
-                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                        )
-                    ]
-                ]
-            , tr [ HA.class "middle-row" ]
-                [ td [ HA.class "mid-left rotate-270" ]
-                    [ div []
-                        (List.filter (\p -> rawPlayerId p.id == 3) playState.players
-                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                        )
-                    ]
-                , td [ HA.class "mid-mid" ] (List.map (viewPile model) playState.piles)
-                , td [ HA.class "mid-right rotate-90" ]
-                    [ div []
-                        (List.filter (\p -> rawPlayerId p.id == 1) playState.players
-                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                        )
-                    ]
-                ]
-            , tr [ HA.class "bottom-player-row" ]
-                [ td [ HA.colspan 3 ]
-                    [ div []
-                        (List.filter (\p -> rawPlayerId p.id == 0) playState.players
-                            |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                        )
-                    ]
-                ]
-            ]
+        [ div
+            (mainDivsHelper { w = 100, h = 10, t = 0, l = 0, c = "top-row" })
+            [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
+        , div (mainDivsHelper { w = 100, h = 32, t = 10, l = 0, c = "top-player-row player-container" })
+            (List.filter (\p -> rawPlayerId p.id == 2) playState.players
+                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+            )
+        , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 2, c = "mid-player-left rotate-270 player-container" })
+            (List.filter (\p -> rawPlayerId p.id == 3) playState.players
+                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+            )
+        , div (mainDivsHelper { w = 60, h = 50, t = 30, l = 20, c = "piles-container" }) (List.map (viewPile model) playState.piles)
+        , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 77, c = "mid-player-right rotate-90 player-container" })
+            (List.filter (\p -> rawPlayerId p.id == 1) playState.players
+                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+            )
+        , div (mainDivsHelper { w = 100, h = 30, t = 70, l = 0, c = "bottom-player-row player-container" })
+            (List.filter (\p -> rawPlayerId p.id == 0) playState.players
+                |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+            )
         ]
 
 
@@ -269,13 +268,13 @@ viewPlayer localState playState playerIx player =
                     Player.viewBack player
     in
     Html.div []
-        [ text player.name
-        , Html.div [ HA.class "player playingCards faceImages" ]
+        [ Html.div [ HA.class "player playingCards faceImages" ]
             [ Html.ul
                 [ HA.class "hand"
                 ]
                 viewCards
             ]
+        , text player.name
         ]
 
 

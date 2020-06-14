@@ -17,7 +17,6 @@ body {
 }
 
 .main {
-  padding: 2em;
 
 }
 
@@ -53,5 +52,15 @@ body {
 }
 
 .middle-row {
-  height: 80vh;
+
+}
+
+.player-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.piles-container {
+  display: flex;
+  justify-content: space-evenly;
 }
