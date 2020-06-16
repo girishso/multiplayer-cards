@@ -4,7 +4,7 @@ import * as serviceWorker from './serviceWorker';
 
 let app = Elm.Main.init({
   node: document.getElementById('root'),
-  flags: {}
+  flags: { windowWidth : window.innerWidth, windowHeight : window.innerHeight }
 });
 
 // If you want your app to work offline and load faster, you can change

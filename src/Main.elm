@@ -23,7 +23,7 @@ type alias Model =
 
 
 type alias Flags =
-    ()
+    { windowWidth : Int, windowHeight : Int }
 
 
 

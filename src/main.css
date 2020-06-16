@@ -51,10 +51,6 @@ body {
   border: 1px dotted #ccc;
 }
 
-.middle-row {
-
-}
-
 .player-container {
   display: flex;
   justify-content: space-evenly;
@@ -63,9 +59,28 @@ body {
 .piles-container {
   display: flex;
   justify-content: space-evenly;
+  background-color: darkorange;
 }
 
+.mid-player-right {
+  background-color: aqua;
+}
 
+.top-row {
+  background-color: turquoise;
+}
+
+.top-player-row {
+  background-color: yellow;
+}
+
+.mid-player-left {
+  background-color: turquoise;
+}
+
+.bottom-player-row {
+  background-color: yellow;
+}
 /*
  * Made by Erik Terwan
  * 24th of November 2015

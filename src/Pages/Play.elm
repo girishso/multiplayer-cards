@@ -217,7 +217,7 @@ view ({ playState, gameDefinition, localState } as model) =
                 (List.filter (\p -> rawPlayerId p.id == 1) playState.players
                     |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
                 )
-            , div (mainDivsHelper { w = 100, h = 30, t = 70, l = 0, c = "bottom-player-row player-container" })
+            , div (mainDivsHelper { w = 100, h = 30, t = 55, l = 0, c = "bottom-player-row player-container" })
                 (List.filter (\p -> rawPlayerId p.id == 0) playState.players
                     |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
                 )
@@ -265,7 +265,8 @@ viewPlayer localState playState playerIx player =
                 ]
                 viewCards
             ]
-        , text player.name
+
+        -- , text player.name
         ]
 
 

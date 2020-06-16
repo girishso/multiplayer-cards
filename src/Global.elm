@@ -22,7 +22,7 @@ import Url exposing (Url)
 
 
 type alias Flags =
-    ()
+    { windowWidth : Int, windowHeight : Int }
 
 
 type alias Model =
@@ -35,7 +35,7 @@ type alias Model =
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     ( Model
-        flags
+        (flags |> Debug.log "flags")
         url
         key
     , Cmd.none
