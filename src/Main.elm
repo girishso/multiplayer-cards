@@ -160,8 +160,15 @@ main =
 
 
 subs : Model -> Sub Msg
-subs _ =
-    Sub.none
+subs model =
+    Sub.batch
+        [ model.global
+            |> Global.subscriptions
+            |> Sub.map GlobalMsg
+        , model.page
+            |> (\page -> Pages.subscriptions page model.global)
+            |> Sub.map PagesMsg
+        ]
 
 
 fromUrl : Url -> Route

@@ -42,6 +42,10 @@ body {
   transform: rotate(90deg);
 }
 
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
 .main-table {
   border: 1px solid #ccc;
   width: 100%;
@@ -72,10 +76,12 @@ body {
 
 .top-player-row {
   background-color: yellow;
+  overflow-y: hidden;
+
 }
 
 .mid-player-left {
-  background-color: turquoise;
+  background-color: aqua;
 }
 
 .bottom-player-row {

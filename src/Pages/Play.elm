@@ -201,23 +201,27 @@ view ({ playState, gameDefinition, localState } as model) =
     , body =
         [ Html.div
             [ HA.class "main" ]
-            [ div
-                (mainDivsHelper { w = 100, h = 10, t = 0, l = 0, c = "top-row" })
+            [ div ({ c = "top-row", w = 100, h = 10, t = 0, l = 0 } |> mainDivsHelper)
                 [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
-            , div (mainDivsHelper { w = 100, h = 32, t = 10, l = 0, c = "top-player-row player-container" })
+            , div ({ c = "top-player-row player-container rotate-180", w = 100, h = 10, t = 10, l = 0 } |> mainDivsHelper)
                 (List.filter (\p -> rawPlayerId p.id == 2) playState.players
                     |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
                 )
-            , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 2, c = "mid-player-left rotate-270 player-container" })
-                (List.filter (\p -> rawPlayerId p.id == 3) playState.players
-                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                )
-            , div (mainDivsHelper { w = 60, h = 50, t = 30, l = 20, c = "piles-container" }) (List.map (viewPile model) playState.piles)
-            , div (mainDivsHelper { w = 20, h = 80, t = 10, l = 77, c = "mid-player-right rotate-90 player-container" })
-                (List.filter (\p -> rawPlayerId p.id == 1) playState.players
-                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                )
-            , div (mainDivsHelper { w = 100, h = 30, t = 55, l = 0, c = "bottom-player-row player-container" })
+            , div ({ c = "mid-player-left rotate-270x player-container", w = 75, h = 15, t = 10, l = 2 } |> mainDivsHelper)
+                []
+
+            -- (List.filter (\p -> rawPlayerId p.id == 3) playState.players
+            --     |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+            -- )
+            , div ({ c = "piles-container", w = 60, h = 40, t = 20, l = 22 } |> mainDivsHelper)
+                (List.map (viewPile model) playState.piles)
+            , div ({ c = "mid-player-right rotate-90x player-container", w = 10, h = 75, t = 10, l = 77 } |> mainDivsHelper)
+                []
+
+            -- (List.filter (\p -> rawPlayerId p.id == 1) playState.players
+            --     |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+            -- )
+            , div ({ c = "bottom-player-row player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
                 (List.filter (\p -> rawPlayerId p.id == 0) playState.players
                     |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
                 )

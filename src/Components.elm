@@ -10,10 +10,11 @@ layout : { page : Document msg } -> Document msg
 layout { page } =
     { title = page.title
     , body =
-        [ div [ class "column spacing--large pad--medium container h--fill" ]
-            [ navbar
-            , div [ class "column", style "flex" "1 0 auto" ] page.body
-            , footer
+        [ div [ class "" ]
+            [ -- navbar
+              div [] page.body
+
+            -- , footer
             ]
         ]
     }
