@@ -22,7 +22,7 @@ import Url exposing (Url)
 
 
 type alias Flags =
-    { windowWidth : Int, windowHeight : Int }
+    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String }
 
 
 type alias Model =

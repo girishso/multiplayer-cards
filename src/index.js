@@ -27,7 +27,11 @@ const gameId = getParameterByName("game_id")
 
 var app = Elm.Main.init({
   node: document.getElementById('root'),
-  flags: { windowWidth : window.innerWidth, windowHeight : window.innerHeight }
+  flags:  { windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+            gameId: gameId,
+            url: window.location.origin
+          }
 });
 
 // If you want your app to work offline and load faster, you can change
@@ -42,7 +46,7 @@ if (gameId !== null) {
       const json = state.val()
       // console.log("  >> joined state: ", json)
       if (json.nPlayers >= 2) {
-          app.ports.newSharedGameCreated.send(`${window.location.origin}/?game_id=${gameId}`)
+          app.ports.newSharedGameCreated.send(gameId)
       }
       if (typeof json.game_state !== "undefined" && json.game_state !== null) {
           let uncmpd = decompress(json.game_state)
@@ -56,7 +60,7 @@ app.ports.focus.subscribe(el => document.getElementById(el).select())
 const createNewGame = () => {
     gamesRootRef.push({ timestamp: Date.now() }).then(data => {
         console.log("  >> data: ", data.key)
-        app.ports.newGameCreated.send(`${window.location.origin}/?game_id=${data.key}`)
+        app.ports.newGameCreated.send(data.key)
         // window.location.href = `/?game_id=${data.key}`
     })
 }

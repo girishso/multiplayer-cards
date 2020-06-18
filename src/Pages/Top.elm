@@ -1,6 +1,7 @@
 module Pages.Top exposing (Flags, Model, Msg, page)
 
 import Browser
+import Global
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
@@ -14,7 +15,7 @@ type alias Flags =
 
 
 type alias Model =
-    { gameUrl : Maybe String }
+    { gameUrl : String }
 
 
 type Msg
@@ -25,7 +26,7 @@ type Msg
 
 page : Page Flags Model Msg
 page =
-    Page.element
+    Page.component
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -33,47 +34,50 @@ page =
         }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Global.Model -> Msg -> Model -> ( Model, Cmd Msg, Cmd Global.Msg )
+update global msg model =
     case msg of
         StartNewGame ->
-            ( model, Ports.createNewGame "String" )
+            ( model, Ports.createNewGame "String", Cmd.none )
 
-        NewGameCreated gameUrl ->
-            ( { model | gameUrl = Just gameUrl }, Cmd.none )
+        NewGameCreated gameId ->
+            ( { model | gameUrl = global.flags.url ++ gameIdParam ++ gameId }, Cmd.none, Cmd.none )
 
         SelectGameUrlInput ->
-            ( model, Ports.focus "url_input" )
+            ( model, Ports.focus "url_input", Cmd.none )
 
 
-view : Model -> Browser.Document Msg
-view model =
+gameIdParam =
+    "?game_id="
+
+
+view : Global.Model -> Model -> Document Msg
+view global model =
     let
         btnOrCopy =
-            case model.gameUrl of
-                Just url ->
-                    div []
-                        [ input
-                            [ HA.readonly True
-                            , HA.id "url_input"
-                            , HE.onClick SelectGameUrlInput
-                            , HA.value url
-                            , HA.style "width" "20%"
-                            ]
-                            []
-                        , br [] []
-                        , br [] []
-                        , button
-                            [ HA.id "copy_url_btn"
-                            , HA.attribute "data-clipboard-target" "#url_input"
-                            , HA.attribute "data-clipboard-text" url
-                            ]
-                            [ text "Copy To Clipboard"
-                            ]
+            if String.contains gameIdParam model.gameUrl then
+                div []
+                    [ input
+                        [ HA.readonly True
+                        , HA.id "url_input"
+                        , HE.onClick SelectGameUrlInput
+                        , HA.value model.gameUrl
+                        , HA.style "width" "20%"
                         ]
+                        []
+                    , br [] []
+                    , br [] []
+                    , button
+                        [ HA.id "copy_url_btn"
+                        , HA.attribute "data-clipboard-target" "#url_input"
+                        , HA.attribute "data-clipboard-text" model.gameUrl
+                        ]
+                        [ text "Copy To Clipboard"
+                        ]
+                    ]
 
-                Nothing ->
-                    button [ HE.onClick StartNewGame ] [ text "Start New Game" ]
+            else
+                button [ HE.onClick StartNewGame ] [ text "Start New Game" ]
     in
     { title = "Sara Cards"
     , body =
@@ -85,11 +89,20 @@ view model =
     }
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Global.Model -> Model -> Sub Msg
+subscriptions global model =
     Ports.newGameCreated NewGameCreated
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( { gameUrl = Nothing }, Cmd.none )
+init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
+init global flags =
+    let
+        gameUrl =
+            case global.flags.gameId of
+                Just gameId ->
+                    global.flags.url ++ gameIdParam ++ gameId
+
+                Nothing ->
+                    global.flags.url
+    in
+    ( { gameUrl = gameUrl }, Cmd.none, Cmd.none )
