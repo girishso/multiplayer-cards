@@ -243,3 +243,8 @@ body {
 {
   transform: none;
 }
+
+
+input:read-only {
+  background-color: #ddd;
+}

@@ -1,8 +1,31 @@
 import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
+import LZString from "lz-string"
+import firebase from "firebase"
 
-let app = Elm.Main.init({
+const getParameterByName = (name_, url) => {
+    if (!url) url = window.location.href
+    let name = name_.replace(/[\[\]]/g, "\\$&")
+    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url)
+    if (!results) return null
+    if (!results[2]) return ""
+    return decodeURIComponent(results[2].replace(/\+/g, " ").trim())
+}
+
+const c = new Clipboard("#copy_url_btn")
+
+const compress = str => LZString.compressToUTF16(str)
+const decompress = str => LZString.decompressFromUTF16(str)
+
+const firebase_config = require("../secrets/firebase-app-config.json")
+firebase.initializeApp(firebase_config)
+const gamesRootRef = firebase.database().ref("games/")
+
+const gameId = getParameterByName("game_id")
+
+var app = Elm.Main.init({
   node: document.getElementById('root'),
   flags: { windowWidth : window.innerWidth, windowHeight : window.innerHeight }
 });
@@ -11,3 +34,45 @@ let app = Elm.Main.init({
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
+console.log("app", app)
+
+if (gameId !== null) {
+  gamesRootRef.child(gameId).on("value", state => {
+      const json = state.val()
+      // console.log("  >> joined state: ", json)
+      if (json.nPlayers >= 2) {
+          app.ports.newSharedGameCreated.send(`${window.location.origin}/?game_id=${gameId}`)
+      }
+      if (typeof json.game_state !== "undefined" && json.game_state !== null) {
+          let uncmpd = decompress(json.game_state)
+          // console.log("  >> uncmpd: ", uncmpd)
+          app.ports.gameStateChanged.send(JSON.parse(uncmpd))
+      }
+  })
+}
+
+app.ports.focus.subscribe(el => document.getElementById(el).select())
+const createNewGame = () => {
+    gamesRootRef.push({ timestamp: Date.now() }).then(data => {
+        console.log("  >> data: ", data.key)
+        app.ports.newGameCreated.send(`${window.location.origin}/?game_id=${data.key}`)
+        // window.location.href = `/?game_id=${data.key}`
+    })
+}
+app.ports.createNewGame.subscribe(str => createNewGame())
+
+//
+// app.ports.sendGameState.subscribe(str => {
+//     let compressed = compress(str)
+//     gamesRootRef.child(gameId).update({ game_state: compressed, timestamp: Date.now() })
+// })
+//
+// app.ports.alert.subscribe(str => window.alert(str))
+//
+// app.ports.copyUrl.subscribe(el => {
+//       document.getElementById(el).select()
+//       try {
+//             succeeded = document.execCommand("copy")
+//         } catch (err) {}
+//     })
