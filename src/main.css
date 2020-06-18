@@ -66,25 +66,29 @@ body {
   background-color: darkorange;
 }
 
-.mid-player-right {
+.right-player {
   background-color: aqua;
+  transform-origin: top left;
+  transform: rotate(90deg);
 }
 
 .top-row {
   background-color: turquoise;
 }
 
-.top-player-row {
+.top-player {
   background-color: yellow;
   overflow-y: hidden;
 
 }
 
-.mid-player-left {
+.left-player {
   background-color: aqua;
+  transform-origin: top left;
+  transform: rotate(90deg);
 }
 
-.bottom-player-row {
+.bottom-player {
   background-color: yellow;
 }
 /*

@@ -116,7 +116,7 @@ init flags url key =
         ( global, globalCmd ) =
             Global.init flags url key
 
-        ( page, pageCmd, pageGlobalCmd ) =
+        ( page, pagesCmd, pageGlobalCmd ) =
             Pages.init (fromUrl url) global
     in
     ( { url = url
@@ -127,23 +127,12 @@ init flags url key =
     , Cmd.batch
         [ Cmd.map GlobalMsg globalCmd
         , Cmd.map GlobalMsg pageGlobalCmd
-        , Cmd.map PagesMsg pageCmd
+        , Cmd.map PagesMsg pagesCmd
         ]
     )
 
 
 
--- let
---
---     in
---     ( Model key url global page
---     , Cmd.batch
---         [ Cmd.map Global globalCmd
---         , Cmd.map Global pageGlobalCmd
---         , Cmd.map Page pageCmd
---         ]
---     )
--- Task.perform OnTime Time.now
 ---- PROGRAM ----
 
 
