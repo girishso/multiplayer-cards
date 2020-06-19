@@ -22,6 +22,7 @@ type Msg
     = StartNewGame
     | NewGameCreated String
     | SelectGameUrlInput
+    | GotoGame
 
 
 page : Page Flags Model Msg
@@ -46,7 +47,11 @@ update global msg model =
         SelectGameUrlInput ->
             ( model, Ports.focus "url_input", Cmd.none )
 
+        GotoGame ->
+            ( model, Cmd.none, Cmd.none )
 
+
+gameIdParam : String
 gameIdParam =
     "?game_id="
 
@@ -71,6 +76,7 @@ view global model =
                         [ HA.id "copy_url_btn"
                         , HA.attribute "data-clipboard-target" "#url_input"
                         , HA.attribute "data-clipboard-text" model.gameUrl
+                        , HE.onClick GotoGame
                         ]
                         [ text "Copy To Clipboard"
                         ]
