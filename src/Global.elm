@@ -1,17 +1,10 @@
-module Global exposing
-    ( Flags
-    , Model
-    , Msg
-    , init
-    , navigate
-    , subscriptions
-    , update
-    , view
-    )
+module Global exposing (..)
 
 import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Components
+import Json.Decode as Decode exposing (field)
+import Json.Encode as Encode exposing (..)
 import Route as Route exposing (Route)
 import Task
 import Url exposing (Url)
@@ -29,15 +22,24 @@ type alias Model =
     { flags : Flags
     , url : Url
     , key : Nav.Key
+    , gameDefinition : GameDefinition
+    }
+
+
+type alias GameDefinition =
+    { numberOfPlayers : Int
+    , numberOfDecks : Int
+    , numberOfPiles : Int
     }
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( Model
-        (flags |> Debug.log "flags")
-        url
-        key
+    ( { flags = flags |> Debug.log "flags"
+      , url = url
+      , key = key
+      , gameDefinition = initGameDefinition
+      }
     , Cmd.none
     )
 
@@ -96,3 +98,33 @@ send =
 navigate : Route -> Cmd Msg
 navigate route =
     send (Navigate route)
+
+
+initGameDefinition : GameDefinition
+initGameDefinition =
+    { numberOfPlayers = 4
+    , numberOfDecks = 1
+    , numberOfPiles = 4
+    }
+
+
+setGameDefinition : a -> { b | gameDefinition : a } -> { b | gameDefinition : a }
+setGameDefinition v model =
+    { model | gameDefinition = v }
+
+
+gameDefinitionEncoder : GameDefinition -> Encode.Value
+gameDefinitionEncoder v =
+    Encode.object
+        [ ( "numberOfPlayers", Encode.int v.numberOfPlayers )
+        , ( "numberOfDecks", Encode.int v.numberOfDecks )
+        , ( "numberOfPiles", Encode.int v.numberOfPiles )
+        ]
+
+
+gameDefinitionDecoder : Decode.Decoder GameDefinition
+gameDefinitionDecoder =
+    Decode.map3 GameDefinition
+        (Decode.field "numberOfPlayers" Decode.int)
+        (Decode.field "numberOfDecks" Decode.int)
+        (Decode.field "numberOfPiles" Decode.int)

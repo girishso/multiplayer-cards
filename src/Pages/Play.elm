@@ -5,6 +5,7 @@ import Browser.Dom
 import Browser.Events
 import Cards exposing (Card)
 import Deck as Deck exposing (Deck)
+import Global
 import Helpers
 import Html exposing (..)
 import Html.Attributes as HA
@@ -28,16 +29,8 @@ type alias Flags =
 
 
 type alias Model =
-    { gameDefinition : GameDefinition
-    , playState : PlayState
+    { playState : PlayState
     , localState : LocalState
-    }
-
-
-type alias GameDefinition =
-    { numberOfPlayers : Int
-    , numberOfDecks : Int
-    , numberOfPiles : Int
     }
 
 
@@ -68,7 +61,7 @@ type Msg
 
 page : Page Flags Model Msg
 page =
-    Page.element
+    Page.component
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -76,18 +69,18 @@ page =
         }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ playState, gameDefinition, localState } as model) =
+update : Global.Model -> Msg -> Model -> ( Model, Cmd Msg, Cmd Global.Msg )
+update ({ gameDefinition } as global) msg ({ playState, localState } as model) =
     case msg of
         ShuffleDeck deck ->
             let
                 players =
                     Deck.distribute2 playState.players deck
             in
-            ( setPlayState { playState | players = players } model, Cmd.none )
+            ( setPlayState { playState | players = players } model, Cmd.none, Cmd.none )
 
         CardSelected card ->
-            ( setLocalState { localState | selectedCard = Just card } model, Cmd.none )
+            ( setLocalState { localState | selectedCard = Just card } model, Cmd.none, Cmd.none )
 
         CardDroppedOnPile pile headOrTail card ->
             let
@@ -106,35 +99,36 @@ update msg ({ playState, gameDefinition, localState } as model) =
                 |> setLocalState { localState | selectedCard = Nothing, selfPlayerIx = setNextPlayerIx newPlayState.players localState.selfPlayerIx }
                 |> setPlayState newPlayState
             , Cmd.none
+            , Cmd.none
             )
 
         Shuffle ->
-            ( model, shuffle gameDefinition )
+            ( model, shuffle gameDefinition, Cmd.none )
 
         WindowResized w h ->
             let
                 _ =
                     Debug.log "WindowResized" ( w, h )
             in
-            ( model |> setLocalState { localState | windowWidth = w, windowHeight = h }, Cmd.none )
+            ( model |> setLocalState { localState | windowWidth = w, windowHeight = h }, Cmd.none, Cmd.none )
 
         OnViewport viewport ->
             let
                 _ =
                     Debug.log "viewport" viewport
             in
-            ( model, Cmd.none )
+            ( model, Cmd.none, Cmd.none )
 
         OnTime posix ->
             let
                 _ =
                     Debug.log "posix" posix
             in
-            ( model, Cmd.none )
+            ( model, Cmd.none, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Global.Model -> Model -> Sub Msg
+subscriptions global model =
     Browser.Events.onResize WindowResized
 
 
@@ -155,11 +149,6 @@ setPlayState v model =
 setLocalState : a -> { b | localState : a } -> { b | localState : a }
 setLocalState v model =
     { model | localState = v }
-
-
-setGameDefinition : a -> { b | gameDefinition : a } -> { b | gameDefinition : a }
-setGameDefinition v model =
-    { model | gameDefinition = v }
 
 
 isCardSelected : Model -> Bool
@@ -195,8 +184,8 @@ getCurrentPlayer playState =
 ---- VIEW ----
 
 
-view : Model -> Browser.Document Msg
-view ({ playState, gameDefinition, localState } as model) =
+view : Global.Model -> Model -> Browser.Document Msg
+view ({ gameDefinition } as global) ({ playState, localState } as model) =
     { title = "URL Interceptor"
     , body =
         [ Html.div
@@ -294,15 +283,7 @@ shuffle { numberOfDecks } =
 ---- inits
 
 
-initGameDefinition : GameDefinition
-initGameDefinition =
-    { numberOfPlayers = 4
-    , numberOfDecks = 1
-    , numberOfPiles = 4
-    }
-
-
-initPlayState : GameDefinition -> PlayState
+initPlayState : Global.GameDefinition -> PlayState
 initPlayState gameDefinition =
     { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
     , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix [])
@@ -319,23 +300,20 @@ initLocalState { players } =
     }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
+init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
+init ({ gameDefinition } as global) flags =
     let
-        gameDefinition =
-            initGameDefinition
-
         playState =
             initPlayState gameDefinition
     in
-    ( { gameDefinition = gameDefinition
-      , playState = playState
+    ( { playState = playState
       , localState = initLocalState playState
       }
     , Cmd.batch
         [ shuffle gameDefinition
         , getWindowSize
         ]
+    , Cmd.none
     )
 
 
@@ -368,33 +346,14 @@ playStateDecoder =
         (Decode.field "currentPlayerIx" Decode.int)
 
 
-gameDefinitionEncoder : GameDefinition -> Encode.Value
-gameDefinitionEncoder v =
-    Encode.object
-        [ ( "numberOfPlayers", Encode.int v.numberOfPlayers )
-        , ( "numberOfDecks", Encode.int v.numberOfDecks )
-        , ( "numberOfPiles", Encode.int v.numberOfPiles )
-        ]
-
-
-gameDefinitionDecoder : Decode.Decoder GameDefinition
-gameDefinitionDecoder =
-    Decode.map3 GameDefinition
-        (Decode.field "numberOfPlayers" Decode.int)
-        (Decode.field "numberOfDecks" Decode.int)
-        (Decode.field "numberOfPiles" Decode.int)
-
-
 modelEncoder : Model -> Encode.Value
 modelEncoder v =
     Encode.object
-        [ ( "gameDefinition", gameDefinitionEncoder v.gameDefinition )
-        , ( "playState", playStateEncoder v.playState )
+        [ ( "playState", playStateEncoder v.playState )
         ]
 
 
 modelDecoder : Decode.Decoder (LocalState -> Model)
 modelDecoder =
-    Decode.map2 Model
-        (Decode.field "gameDefinition" gameDefinitionDecoder)
+    Decode.map Model
         (Decode.field "playState" playStateDecoder)
