@@ -37,7 +37,7 @@ type alias GameDefinition =
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( { flags = flags |> Debug.log "flags"
+    ( { flags = flags
       , url = url
       , key = key
       , gameDefinition = initGameDefinition
@@ -60,7 +60,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "globalMsg" msg of
+    case msg of
         Navigate route ->
             ( model
             , Nav.pushUrl model.key (Route.toHref route)

@@ -68,7 +68,7 @@ pages =
 
 init : Route -> Global.Model -> ( Model, Cmd Msg, Cmd Global.Msg )
 init route =
-    case Debug.log "pages init" route of
+    case route of
         Route.Top ->
             pages.top.init ()
 

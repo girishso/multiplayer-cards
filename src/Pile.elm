@@ -29,9 +29,6 @@ newTwoWayPile id =
 add : Card -> HeadOrTail -> Pile -> Pile
 add card headOrTail pile =
     let
-        _ =
-            Debug.log "add card headOrTail pile" ( card, headOrTail, pile )
-
         appendCard cards =
             List.append cards [ card ]
     in
@@ -40,7 +37,7 @@ add card headOrTail pile =
             appendCard cards |> SimplePile id
 
         TwoWayPile id cards ->
-            (TwoWayPile id |> Debug.log "twowaypile") <|
+            TwoWayPile id <|
                 case headOrTail of
                     Head ->
                         card :: cards

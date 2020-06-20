@@ -56,7 +56,6 @@ type Msg
     | CardDroppedOnPile Pile Types.HeadOrTail Card
     | Shuffle
     | WindowResized Int Int
-    | OnTime Time.Posix
     | OnViewport Browser.Dom.Viewport
     | GameStateNDefChanged (Result Decode.Error PlayStateNDef)
 
@@ -118,24 +117,17 @@ update global msg ({ playState, localState } as model) =
             ( model, shuffle global.gameDefinition, Cmd.none )
 
         WindowResized w h ->
-            let
-                _ =
-                    Debug.log "WindowResized" ( w, h )
-            in
+            -- let
+            --     _ =
+            --         Debug.log "WindowResized" ( w, h )
+            -- in
             ( model |> setLocalState { localState | windowWidth = w, windowHeight = h }, Cmd.none, Cmd.none )
 
         OnViewport viewport ->
-            let
-                _ =
-                    Debug.log "viewport" viewport
-            in
-            ( model, Cmd.none, Cmd.none )
-
-        OnTime posix ->
-            let
-                _ =
-                    Debug.log "posix" posix
-            in
+            -- let
+            --     _ =
+            --         Debug.log "viewport" viewport
+            -- in
             ( model, Cmd.none, Cmd.none )
 
         GameStateNDefChanged json ->
@@ -146,10 +138,10 @@ update global msg ({ playState, localState } as model) =
                             value
 
                         Err error ->
-                            let
-                                _ =
-                                    Debug.log "GameStateChanged err" error
-                            in
+                            -- let
+                            --     _ =
+                            --         Debug.log "GameStateChanged err" error
+                            -- in
                             { playState = model.playState, gameDefinition = global.gameDefinition }
             in
             ( model |> setPlayState gsnd.playState
