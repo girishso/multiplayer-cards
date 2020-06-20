@@ -78,8 +78,8 @@ init route =
         Route.Play gameId ->
             pages.play.init { gameId = gameId }
 
-        Route.Waiting gameId gameUrl ->
-            pages.waiting.init { gameId = gameId, gameUrl = gameUrl }
+        Route.Waiting gameId gameUrl gameCreator ->
+            pages.waiting.init { gameId = gameId, gameUrl = gameUrl, gameCreator = gameCreator }
 
 
 

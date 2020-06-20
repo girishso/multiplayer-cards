@@ -43,7 +43,7 @@ update global msg model =
         NewGameCreated gameId ->
             ( { model | gameUrl = global.flags.url ++ gameIdParam ++ gameId }
             , Cmd.none
-            , Global.navigate (Route.Waiting gameId (Just (global.flags.url ++ gameIdParam ++ gameId)))
+            , Global.navigate (Route.Waiting gameId (Just (global.flags.url ++ gameIdParam ++ gameId)) (Just "1"))
             )
 
 

@@ -2,25 +2,41 @@ module Pages.Waiting exposing (Flags, Model, Msg, page)
 
 import Browser
 import Global
+import Helpers
 import Html exposing (..)
 import Html.Attributes as HA
 import Html.Events as HE
+import Maybe.Extra
 import Page exposing (Document, Page)
 import Ports
 import Url exposing (Url)
 
 
 type alias Flags =
-    { gameId : String, gameUrl : Maybe String }
+    { gameId : String, gameUrl : Maybe String, gameCreator : Maybe String }
 
 
 type alias Model =
-    { gameId : String, gameUrl : Maybe String }
+    { gameId : String
+    , gameUrl : Maybe String
+    , gameCreator : Maybe String
+    , pageState : PageState
+    , userName : String
+    }
 
 
 type Msg
     = PlayerJoined
     | SelectGameUrlInput
+    | StartWaiting
+    | SetUserName String
+    | UsernameSelected
+
+
+type PageState
+    = NewGameCreated
+    | SelectingUsername
+    | Waiting
 
 
 page : Page Flags Model Msg
@@ -42,35 +58,56 @@ update global msg model =
         SelectGameUrlInput ->
             ( model, Ports.focus "url_input", Cmd.none )
 
+        StartWaiting ->
+            ( { model | pageState = SelectingUsername }, Cmd.none, Cmd.none )
+
+        SetUserName v ->
+            ( { model | userName = v }, Cmd.none, Cmd.none )
+
+        UsernameSelected ->
+            ( { model | pageState = Waiting }, Cmd.none, Cmd.none )
+
 
 view : Global.Model -> Model -> Document Msg
 view global model =
+    let
+        copyOrWaiting =
+            case model.pageState of
+                NewGameCreated ->
+                    div []
+                        [ h2 [] [ text "Successfully created new Game. Copy and share the Game url." ]
+                        , input
+                            [ HA.readonly True
+                            , HA.id "url_input"
+                            , HE.onClick SelectGameUrlInput
+                            , HA.value (model.gameUrl |> Maybe.withDefault "xx")
+                            , HA.style "width" "20%"
+                            ]
+                            []
+                        , br [] []
+                        , br [] []
+                        , button
+                            [ HA.id "copy_url_btn"
+                            , HA.attribute "data-clipboard-target" "#url_input"
+                            , HE.onClick StartWaiting
+                            ]
+                            [ text "Copy To Clipboard"
+                            ]
+                        ]
+
+                SelectingUsername ->
+                    div []
+                        [ h2 [] [ text "Select your username" ]
+                        , input [ HE.onInput SetUserName, HA.value model.userName, HA.placeholder "Batman" ] []
+                        , button [ HE.onClick UsernameSelected, HA.disabled (Helpers.isBlank model.userName) ] [ text "Start" ]
+                        ]
+
+                Waiting ->
+                    h2 [] [ text "Waiting for all players to join" ]
+    in
     { title = "Sara Cards"
     , body =
-        [ h1 []
-            [ text "Welcome to the cards game!"
-            ]
-        , h2 [] [ text "Waiting for all players to join" ]
-        , div []
-            [ input
-                [ HA.readonly True
-                , HA.id "url_input"
-                , HE.onClick SelectGameUrlInput
-                , HA.value (model.gameUrl |> Maybe.withDefault "xx")
-                , HA.style "width" "20%"
-                ]
-                []
-            , br [] []
-            , br [] []
-            , button
-                [ HA.id "copy_url_btn"
-                , HA.attribute "data-clipboard-target" "#url_input"
-
-                -- , HA.attribute "data-clipboard-text" model.gameUrl
-                ]
-                [ text "Copy To Clipboard"
-                ]
-            ]
+        [ copyOrWaiting
         ]
     }
 
@@ -82,4 +119,18 @@ subscriptions global model =
 
 init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
 init global flags =
-    ( flags, Cmd.none, Cmd.none )
+    let
+        model =
+            { gameId = flags.gameId
+            , gameUrl = flags.gameUrl
+            , gameCreator = flags.gameCreator
+            , pageState =
+                if Maybe.Extra.isNothing flags.gameCreator then
+                    SelectingUsername
+
+                else
+                    NewGameCreated
+            , userName = ""
+            }
+    in
+    ( model, Cmd.none, Cmd.none )
