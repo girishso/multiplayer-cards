@@ -246,35 +246,26 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
 
             -- Left
             , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 20, l = 5 } |> mainDivsHelper)
-                (rotatedPlayers
-                    |> List.indexedMap
-                        (\ix p ->
-                            if ix == 3 then
-                                Just p
-
-                            else
-                                Nothing
-                        )
-                    |> List.filterMap identity
-                    |> List.map (\p -> viewPlayer localState playState False p)
+                (getNthRotatedPlayersList 3
+                    |> List.map (viewPlayer localState playState False)
                 )
 
             -- Top
             , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 10, l = 0 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 2
-                    |> List.map (\p -> viewPlayer localState playState False p)
+                    |> List.map (viewPlayer localState playState False)
                 )
 
             -- Right
             , div ({ c = "right-player rotate-90x player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 1
-                    |> List.map (\p -> viewPlayer localState playState False p)
+                    |> List.map (viewPlayer localState playState False)
                 )
 
             -- Bottom
             , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 0
-                    |> List.map (\p -> viewPlayer localState playState True p)
+                    |> List.map (viewPlayer localState playState True)
                 )
             ]
         ]
