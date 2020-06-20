@@ -9,3 +9,8 @@ makeListOf n f =
 isBlank : String -> Bool
 isBlank =
     String.trim >> String.isEmpty
+
+
+noneNone : a -> ( a, Cmd msg, Cmd msg1 )
+noneNone model =
+    ( model, Cmd.none, Cmd.none )

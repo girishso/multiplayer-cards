@@ -16,7 +16,7 @@ type alias Flags =
 
 
 type alias Model =
-    { gameUrl : String, newGameId : String }
+    { newGameId : String }
 
 
 type Msg
@@ -41,15 +41,10 @@ update global msg model =
             ( model, Ports.createNewGame "String", Cmd.none )
 
         NewGameCreated gameId ->
-            ( { model | gameUrl = global.flags.url ++ gameIdParam ++ gameId }
+            ( model
             , Cmd.none
-            , Global.navigate (Route.Waiting gameId (Just (global.flags.url ++ gameIdParam ++ gameId)) (Just "1"))
+            , Global.navigate (Route.Waiting gameId (Just (global.flags.url ++ "/" ++ gameId ++ "/waiting")) (Just "1"))
             )
-
-
-gameIdParam : String
-gameIdParam =
-    "?game_id="
 
 
 view : Global.Model -> Model -> Document Msg
@@ -76,12 +71,12 @@ subscriptions global model =
 init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
 init global flags =
     let
-        ( gameUrl, newGameId ) =
+        newGameId =
             case global.flags.gameId of
                 Just gameId ->
-                    ( global.flags.url ++ gameIdParam ++ gameId, gameId )
+                    gameId
 
                 Nothing ->
-                    ( global.flags.url, "" )
+                    ""
     in
-    ( { gameUrl = gameUrl, newGameId = newGameId }, Cmd.none, Cmd.none )
+    ( { newGameId = newGameId }, Cmd.none, Cmd.none )

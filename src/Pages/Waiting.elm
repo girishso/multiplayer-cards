@@ -9,6 +9,7 @@ import Html.Events as HE
 import Maybe.Extra
 import Page exposing (Document, Page)
 import Ports
+import Route
 import Url exposing (Url)
 
 
@@ -29,10 +30,11 @@ type alias Model =
 type Msg
     = PlayerJoined
     | SelectGameUrlInput
-    | StartWaiting
+    | StartSelectingUsername
     | SetUserName String
     | UsernameSelected
     | SetPlayers (List String)
+    | StartPlaying
 
 
 type PageState
@@ -55,65 +57,85 @@ update : Global.Model -> Msg -> Model -> ( Model, Cmd Msg, Cmd Global.Msg )
 update global msg model =
     case msg of
         PlayerJoined ->
-            ( model, Cmd.none, Cmd.none )
+            model
+                |> Helpers.noneNone
 
         SelectGameUrlInput ->
             ( model, Ports.focus "url_input", Cmd.none )
 
-        StartWaiting ->
-            ( { model | pageState = SelectingUsername }, Cmd.none, Cmd.none )
+        StartSelectingUsername ->
+            { model | pageState = SelectingUsername }
+                |> Helpers.noneNone
 
         SetUserName v ->
-            ( { model | userName = v }, Cmd.none, Cmd.none )
+            { model | userName = v }
+                |> Helpers.noneNone
 
         UsernameSelected ->
             ( { model | pageState = Waiting }, Ports.usernameSelected model.userName, Cmd.none )
 
         SetPlayers players ->
-            ( { model | joinedPlayers = players }, Cmd.none, Cmd.none )
+            { model | joinedPlayers = players }
+                |> Helpers.noneNone
+
+        StartPlaying ->
+            ( model, Cmd.none, Global.navigate (Route.Play model.gameId) )
 
 
 view : Global.Model -> Model -> Document Msg
-view global model =
+view ({ gameDefinition } as global) model =
     let
-        copyOrWaiting =
+        body =
             case model.pageState of
                 NewGameCreated ->
-                    div []
-                        [ h2 [] [ text "Successfully created new Game. Copy and share the Game url." ]
-                        , input
-                            [ HA.readonly True
-                            , HA.id "url_input"
-                            , HE.onClick SelectGameUrlInput
-                            , HA.value (model.gameUrl |> Maybe.withDefault "xx")
-                            , HA.style "width" "30%"
-                            ]
-                            []
-                        , br [] []
-                        , br [] []
-                        , button
-                            [ HA.id "copy_url_btn"
-                            , HA.attribute "data-clipboard-target" "#url_input"
-                            , HE.onClick StartWaiting
-                            ]
-                            [ text "Copy To Clipboard"
-                            ]
+                    [ h2 [] [ text "Successfully created new Game. Copy and share the Game url." ]
+                    , input
+                        [ HA.readonly True
+                        , HA.id "url_input"
+                        , HE.onClick SelectGameUrlInput
+                        , HA.value (model.gameUrl |> Maybe.withDefault "xx")
+                        , HA.style "width" "30%"
                         ]
+                        []
+                    , br [] []
+                    , br [] []
+                    , button
+                        [ HA.id "copy_url_btn"
+                        , HA.attribute "data-clipboard-target" "#url_input"
+                        , HE.onClick StartSelectingUsername
+                        ]
+                        [ text "Copy To Clipboard"
+                        ]
+                    ]
 
                 SelectingUsername ->
-                    div []
-                        [ h2 [] [ text "Select your username" ]
-                        , input [ HE.onInput SetUserName, HA.value model.userName, HA.placeholder "Batman" ] []
-                        , button [ HE.onClick UsernameSelected, HA.disabled (Helpers.isBlank model.userName) ] [ text "Start" ]
-                        ]
+                    [ h2 [] [ text "Select your username" ]
+                    , input [ HE.onInput SetUserName, HA.value model.userName, HA.placeholder "Batman" ] []
+                    , button [ HE.onClick UsernameSelected, HA.disabled (Helpers.isBlank model.userName) ] [ text "Start" ]
+                    ]
 
                 Waiting ->
-                    h2 [] [ text "Waiting for all players to join" ]
+                    [ h2 [] [ text "Waiting for all players to join" ]
+                    , h3 [] [ text "Joined players" ]
+                    , ul [] (List.map (\player -> li [] [ text player ]) model.joinedPlayers)
+                    ]
+                        ++ (case ( List.length model.joinedPlayers == gameDefinition.numberOfPlayers, Maybe.Extra.isJust model.gameCreator ) of
+                                ( True, True ) ->
+                                    [ h3 [] [ text "All players have joined! Yay!!" ]
+                                    , button [ HE.onClick StartPlaying ] [ text "Start Playing" ]
+                                    ]
+
+                                ( True, False ) ->
+                                    [ h3 [] [ text "All players have joined! Yay!!" ]
+                                    , h4 [] [ text "Ask game creator to start the Game already!" ]
+                                    ]
+
+                                _ ->
+                                    []
+                           )
     in
     { title = "Sara Cards"
-    , body =
-        [ copyOrWaiting
-        ]
+    , body = body
     }
 
 

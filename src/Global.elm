@@ -104,7 +104,7 @@ navigate route =
 
 initGameDefinition : GameDefinition
 initGameDefinition =
-    { numberOfPlayers = 4
+    { numberOfPlayers = 2
     , numberOfDecks = 1
     , numberOfPiles = 4
     }

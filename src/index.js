@@ -69,10 +69,13 @@ const createNewGame = () => {
         // window.location.href = `/?game_id=${data.key}`
     })
 }
+
 app.ports.createNewGame.subscribe(str => createNewGame())
 
+const gameRef = () => gamesRootRef.child(gameId)
+
 app.ports.usernameSelected.subscribe(name => {
-  gamesRootRef.child(gameId).child(`players`).transaction(
+  gameRef().child(`players`).transaction(
         players => {
             console.log("  >>> players: ", players)
             localStorage.setItem("playerName", name)
@@ -83,16 +86,31 @@ app.ports.usernameSelected.subscribe(name => {
         },
         (e, commited, snapshot) => {
             console.log("commited", commited, snapshot.val())
-            if(commited)
+            if(commited) {
               app.ports.setPlayers.send(snapshot.val())
+              watchPlayers()
+            }
             // if (commited && snapshot.val() == 2) {
             //     app.ports.setThisPlayer.send("BlackPlayer")
             //     localStorage.setItem(gameId, "BlackPlayer")
             // }
+
         },
         false
     )
+
+
 })
+
+const watchPlayers = () => {
+  if(gameRef() !== null) {
+    gameRef().child(`players`).on("value", players => {
+      console.log("   >>> watchPlayers players", players)
+      if(players !== null)
+        app.ports.setPlayers.send(players.val())
+    })
+  }
+}
 
 //
 // app.ports.sendGameState.subscribe(str => {
