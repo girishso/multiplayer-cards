@@ -18,6 +18,7 @@ import Maybe.Extra
 import Page exposing (Document, Page)
 import Pile exposing (Pile)
 import Player exposing (Player)
+import Ports
 import Random
 import Task
 import Time
@@ -57,6 +58,7 @@ type Msg
     | WindowResized Int Int
     | OnTime Time.Posix
     | OnViewport Browser.Dom.Viewport
+    | GameStateNDefChanged (Result Decode.Error PlayStateNDef)
 
 
 page : Page Flags Model Msg
@@ -70,14 +72,21 @@ page =
 
 
 update : Global.Model -> Msg -> Model -> ( Model, Cmd Msg, Cmd Global.Msg )
-update ({ gameDefinition } as global) msg ({ playState, localState } as model) =
+update global msg ({ playState, localState } as model) =
     case msg of
         DeckShuffled deck ->
             let
                 players =
                     Deck.distribute2 playState.players deck
+
+                newModel =
+                    setPlayState { playState | players = players } model
             in
-            ( setPlayState { playState | players = players } model, Cmd.none, Cmd.none )
+            ( newModel
+            , Encode.encode 1 (playStateNDefEncoder { playState = newModel.playState, gameDefinition = global.gameDefinition })
+                |> Ports.sendGameStateNDef
+            , Cmd.none
+            )
 
         CardSelected card ->
             ( setLocalState { localState | selectedCard = Just card } model, Cmd.none, Cmd.none )
@@ -103,7 +112,7 @@ update ({ gameDefinition } as global) msg ({ playState, localState } as model) =
             )
 
         Shuffle ->
-            ( model, shuffle gameDefinition, Cmd.none )
+            ( model, shuffle global.gameDefinition, Cmd.none )
 
         WindowResized w h ->
             let
@@ -126,10 +135,32 @@ update ({ gameDefinition } as global) msg ({ playState, localState } as model) =
             in
             ( model, Cmd.none, Cmd.none )
 
+        GameStateNDefChanged json ->
+            let
+                gsnd =
+                    case json of
+                        Ok value ->
+                            value
+
+                        Err error ->
+                            let
+                                _ =
+                                    Debug.log "GameStateChanged err" error
+                            in
+                            { playState = model.playState, gameDefinition = global.gameDefinition }
+            in
+            ( model |> setPlayState gsnd.playState
+            , Cmd.none
+            , Cmd.none
+            )
+
 
 subscriptions : Global.Model -> Model -> Sub Msg
 subscriptions global model =
-    Browser.Events.onResize WindowResized
+    Sub.batch
+        [ Browser.Events.onResize WindowResized
+        , Ports.gameStateNDefChanged (GameStateNDefChanged << Decode.decodeValue playStateNDefDecoder)
+        ]
 
 
 setNextPlayerIx : List Player -> Int -> Int

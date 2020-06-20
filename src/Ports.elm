@@ -10,7 +10,6 @@ import Json.Decode as Decode
 --
 --
 --
--- port gameStateChanged : (Decode.Value -> msg) -> Sub msg
 --
 --
 -- port newSharedGameCreated : (String -> msg) -> Sub msg
@@ -39,4 +38,7 @@ port usernameSelected : String -> Cmd msg
 port setPlayers : (List String -> msg) -> Sub msg
 
 
-port sendGameState : String -> Cmd msg
+port sendGameStateNDef : String -> Cmd msg
+
+
+port gameStateNDefChanged : (Decode.Value -> msg) -> Sub msg

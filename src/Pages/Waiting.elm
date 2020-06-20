@@ -75,7 +75,13 @@ update global msg model =
             ( model, Cmd.none, Global.setPlayers players )
 
         StartPlaying ->
-            ( model, Cmd.none, Global.navigate (Route.Play model.gameId) )
+            ( model
+            , Cmd.none
+            , Cmd.batch
+                [ Global.setPlayers [ "xyz" ]
+                , Global.navigate (Route.Play model.gameId)
+                ]
+            )
 
 
 view : Global.Model -> Model -> Document Msg
