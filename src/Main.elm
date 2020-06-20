@@ -24,7 +24,7 @@ type alias Model =
 
 
 type alias Flags =
-    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String }
+    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String, playerName : Maybe String }
 
 
 

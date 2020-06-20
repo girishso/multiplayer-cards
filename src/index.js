@@ -35,7 +35,8 @@ var app = Elm.Main.init({
   flags:  { windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,
             gameId: gameId,
-            url: window.location.origin
+            url: window.location.origin,
+            playerName: localStorage.getItem("playerName")
           }
 });
 

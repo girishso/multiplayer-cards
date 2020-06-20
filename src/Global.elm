@@ -15,7 +15,7 @@ import Url exposing (Url)
 
 
 type alias Flags =
-    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String }
+    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String, playerName : Maybe String }
 
 
 type alias Model =
@@ -23,7 +23,8 @@ type alias Model =
     , url : Url
     , key : Nav.Key
     , gameDefinition : GameDefinition
-    , waitingPlayers : List String
+    , joinedPlayers : List String
+    , myPlayerName : String
     }
 
 
@@ -40,7 +41,8 @@ init flags url key =
       , url = url
       , key = key
       , gameDefinition = initGameDefinition
-      , waitingPlayers = []
+      , joinedPlayers = []
+      , myPlayerName = flags.playerName |> Maybe.withDefault ""
       }
     , Cmd.none
     )
@@ -52,6 +54,8 @@ init flags url key =
 
 type Msg
     = Navigate Route
+    | SetPlayerName String
+    | SetPlayers (List String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -61,6 +65,12 @@ update msg model =
             ( model
             , Nav.pushUrl model.key (Route.toHref route)
             )
+
+        SetPlayerName v ->
+            ( { model | myPlayerName = v }, Cmd.none )
+
+        SetPlayers v ->
+            ( { model | joinedPlayers = v }, Cmd.none )
 
 
 
@@ -100,6 +110,16 @@ send =
 navigate : Route -> Cmd Msg
 navigate route =
     send (Navigate route)
+
+
+setPlayerName : String -> Cmd Msg
+setPlayerName v =
+    send (SetPlayerName v)
+
+
+setPlayers : List String -> Cmd Msg
+setPlayers v =
+    send (SetPlayers v)
 
 
 initGameDefinition : GameDefinition

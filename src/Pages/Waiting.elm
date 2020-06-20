@@ -22,8 +22,6 @@ type alias Model =
     , gameUrl : Maybe String
     , gameCreator : Maybe String
     , pageState : PageState
-    , userName : String
-    , joinedPlayers : List String
     }
 
 
@@ -68,15 +66,13 @@ update global msg model =
                 |> Helpers.noneNone
 
         SetUserName v ->
-            { model | userName = v }
-                |> Helpers.noneNone
+            ( model, Cmd.none, Global.setPlayerName v )
 
         UsernameSelected ->
-            ( { model | pageState = Waiting }, Ports.usernameSelected model.userName, Cmd.none )
+            ( { model | pageState = Waiting }, Ports.usernameSelected global.myPlayerName, Cmd.none )
 
         SetPlayers players ->
-            { model | joinedPlayers = players }
-                |> Helpers.noneNone
+            ( model, Cmd.none, Global.setPlayers players )
 
         StartPlaying ->
             ( model, Cmd.none, Global.navigate (Route.Play model.gameId) )
@@ -110,16 +106,16 @@ view ({ gameDefinition } as global) model =
 
                 SelectingUsername ->
                     [ h2 [] [ text "Select your username" ]
-                    , input [ HE.onInput SetUserName, HA.value model.userName, HA.placeholder "Batman" ] []
-                    , button [ HE.onClick UsernameSelected, HA.disabled (Helpers.isBlank model.userName) ] [ text "Start" ]
+                    , input [ HE.onInput SetUserName, HA.value global.myPlayerName, HA.placeholder "Batman" ] []
+                    , button [ HE.onClick UsernameSelected, HA.disabled (Helpers.isBlank global.myPlayerName) ] [ text "Start" ]
                     ]
 
                 Waiting ->
                     [ h2 [] [ text "Waiting for all players to join" ]
                     , h3 [] [ text "Joined players" ]
-                    , ul [] (List.map (\player -> li [] [ text player ]) model.joinedPlayers)
+                    , ul [] (List.map (\player -> li [] [ text player ]) global.joinedPlayers)
                     ]
-                        ++ (case ( List.length model.joinedPlayers == gameDefinition.numberOfPlayers, Maybe.Extra.isJust model.gameCreator ) of
+                        ++ (case ( List.length global.joinedPlayers == gameDefinition.numberOfPlayers, Maybe.Extra.isJust model.gameCreator ) of
                                 ( True, True ) ->
                                     [ h3 [] [ text "All players have joined! Yay!!" ]
                                     , button [ HE.onClick StartPlaying ] [ text "Start Playing" ]
@@ -134,7 +130,7 @@ view ({ gameDefinition } as global) model =
                                     []
                            )
     in
-    { title = "Sara Cards"
+    { title = "Sara's Cards"
     , body = body
     }
 
@@ -157,8 +153,6 @@ init global flags =
 
                 else
                     NewGameCreated
-            , userName = ""
-            , joinedPlayers = []
             }
     in
     ( model, Cmd.none, Cmd.none )
