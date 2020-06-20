@@ -93,19 +93,20 @@ update global msg ({ playState, localState } as model) =
         CardDroppedOnPile pile headOrTail card ->
             let
                 newPlayState =
-                    Player.dropCardOnPile card headOrTail pile (getCurrentPlayer playState)
+                    getCurrentPlayer playState
+                        |> Player.dropCardOnPile card headOrTail pile
                         |> Tuple.mapBoth (\newPlayer -> List.Extra.updateAt (rawPlayerId newPlayer.id) (always newPlayer) playState.players)
                             (\newPile -> Pile.updatePile newPile playState.piles)
                         |> (\( newPlayers, newPiles ) ->
                                 { players = newPlayers
                                 , piles = newPiles
-                                , currentPlayerIx = setNextPlayerIx newPlayers playState.currentPlayerIx
+                                , currentPlayerIx = getNextPlayerIx newPlayers playState.currentPlayerIx
                                 }
                            )
 
                 newModel =
                     model
-                        |> setLocalState { localState | selectedCard = Nothing, myIx = setNextPlayerIx newPlayState.players localState.myIx }
+                        |> setLocalState { localState | selectedCard = Nothing }
                         |> setPlayState newPlayState
             in
             ( newModel
@@ -170,8 +171,8 @@ subscriptions global model =
         ]
 
 
-setNextPlayerIx : List Player -> Int -> Int
-setNextPlayerIx players currentPlayerIx =
+getNextPlayerIx : List Player -> Int -> Int
+getNextPlayerIx players currentPlayerIx =
     if List.length players == currentPlayerIx + 1 then
         0
 
@@ -194,8 +195,8 @@ isCardSelected { localState } =
     Maybe.Extra.isJust localState.selectedCard
 
 
-isSelfPlayersTurn : PlayState -> LocalState -> Bool
-isSelfPlayersTurn playState localState =
+isMyTurn : PlayState -> LocalState -> Bool
+isMyTurn playState localState =
     localState.myIx == playState.currentPlayerIx
 
 
@@ -224,58 +225,75 @@ getCurrentPlayer playState =
 
 view : Global.Model -> Model -> Browser.Document Msg
 view ({ gameDefinition } as global) ({ playState, localState } as model) =
-    { title = "URL Interceptor"
+    let
+        rotatedPlayers =
+            Helpers.rotate localState.myIx playState.players
+
+        getNthRotatedPlayersList n =
+            rotatedPlayers
+                |> List.indexedMap
+                    (\ix p ->
+                        if ix == n then
+                            Just p
+
+                        else
+                            Nothing
+                    )
+                |> List.filterMap identity
+    in
+    { title = "Badaam Saat - (Seven of Hearts)"
     , body =
         [ Html.div
             [ HA.class "main" ]
             [ div ({ c = "top-row", w = 100, h = 10, t = 0, l = 0 } |> mainDivsHelper)
                 [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
-            , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 10, l = 0 } |> mainDivsHelper)
-                (List.filter (\p -> rawPlayerId p.id == 2) playState.players
-                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                )
-            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 20, l = 5 } |> mainDivsHelper)
-                (List.filter (\p -> rawPlayerId p.id == 3) playState.players
-                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
-                )
+
+            -- Piles
             , div ({ c = "piles-container", w = 60, h = 40, t = 20, l = 22 } |> mainDivsHelper)
                 (List.map (viewPile model) playState.piles)
-            , div ({ c = "right-player rotate-90x player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
-                (List.filter (\p -> rawPlayerId p.id == 1) playState.players
-                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+
+            -- Left
+            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 20, l = 5 } |> mainDivsHelper)
+                (rotatedPlayers
+                    |> List.indexedMap
+                        (\ix p ->
+                            if ix == 3 then
+                                Just p
+
+                            else
+                                Nothing
+                        )
+                    |> List.filterMap identity
+                    |> List.map (\p -> viewPlayer localState playState False p)
                 )
+
+            -- Top
+            , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 10, l = 0 } |> mainDivsHelper)
+                (getNthRotatedPlayersList 2
+                    |> List.map (\p -> viewPlayer localState playState False p)
+                )
+
+            -- Right
+            , div ({ c = "right-player rotate-90x player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
+                (getNthRotatedPlayersList 1
+                    |> List.map (\p -> viewPlayer localState playState False p)
+                )
+
+            -- Bottom
             , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
-                (List.filter (\p -> rawPlayerId p.id == 0) playState.players
-                    |> List.map (\p -> viewPlayer localState playState (rawPlayerId p.id) p)
+                (getNthRotatedPlayersList 0
+                    |> List.map (\p -> viewPlayer localState playState True p)
                 )
             ]
         ]
     }
 
 
-viewPile : Model -> Pile -> Html Msg
-viewPile ({ localState, playState } as model) pile =
-    let
-        viewPile_ pile_ =
-            List.singleton <|
-                case isSelfPlayersTurn playState localState of
-                    True ->
-                        Pile.view CardSelected CardDroppedOnPile (getSelectedCard model) pile
-
-                    False ->
-                        Pile.viewOnly pile
-    in
-    Html.div []
-        [ Html.div [ HA.class "pile playingCards faceImages suitTop" ]
-            (viewPile_ pile)
-        ]
-
-
-viewPlayer : LocalState -> PlayState -> Int -> Player -> Html Msg
-viewPlayer localState playState playerIx player =
+viewPlayer : LocalState -> PlayState -> Bool -> Player -> Html Msg
+viewPlayer localState playState me player =
     let
         viewCards =
-            case ( playerIx == localState.myIx, isSelfPlayersTurn playState localState ) of
+            case ( me, isMyTurn playState localState ) of
                 ( True, True ) ->
                     Player.viewSpanWithClick CardSelected localState.selectedCard player
 
@@ -292,8 +310,25 @@ viewPlayer localState playState playerIx player =
                 ]
                 viewCards
             ]
+        , text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")")
+        ]
 
-        -- , text player.name
+
+viewPile : Model -> Pile -> Html Msg
+viewPile ({ localState, playState } as model) pile =
+    let
+        viewPile_ pile_ =
+            List.singleton <|
+                case isMyTurn playState localState of
+                    True ->
+                        Pile.view CardSelected CardDroppedOnPile (getSelectedCard model) pile
+
+                    False ->
+                        Pile.viewOnly pile
+    in
+    Html.div []
+        [ Html.div [ HA.class "pile playingCards faceImages suitTop" ]
+            (viewPile_ pile)
         ]
 
 

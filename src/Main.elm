@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (Flags, Model, Msg(..), fromUrl, init, main, subs, update, view)
 
 import Browser
 import Browser.Navigation as Nav exposing (Key)
@@ -98,17 +98,6 @@ view model =
         , global = model.global
         , toMsg = GlobalMsg
         }
-
-
-
--- Html.div
---     [ HA.class "main" ]
---     [ Html.div [ HA.class "piles" ]
---         (List.map (viewPile model) playState.piles)
---     , Html.div [ HA.class "players" ]
---         (List.indexedMap (viewPlayer localState playState) playState.players)
---     ]
----- inits
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
