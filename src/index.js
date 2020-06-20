@@ -39,13 +39,12 @@ const gameRef       = () => gameIdPresent() ? gamesRootRef.child(gameId) : null
 
 const watchGameState = () => {
   if (gameIdPresent()) {
-    console.log("gameRef", gameRef())
     gameRef().child("game_state").on("value", state => {
         const json = state.val()
-        console.log("  >> joined state: ", json)
+        // console.log("  >> joined state: ", json)
 
         if (typeof json !== "undefined" && json !== null) {
-            const uncmpd = json // decompress(json)
+            const uncmpd = decompress(json)
             // console.log("  >> uncmpd: ", uncmpd)
 
             const parsed = JSON.parse(uncmpd)
@@ -55,22 +54,37 @@ const watchGameState = () => {
   }
 }
 
+const watchGameStarted = () => {
+  if (gameIdPresent()) {
+      gameRef().child("game_started").on("value", v => {
+
+      if (v.val()) {
+        watchGameState()
+        app.ports.gameStarted.send(null)
+        // stop watching started status
+        gameRef().child("game_started").off("value")
+        gameRef().child(`players`).off("value")
+      }
+
+    })
+  }
+}
+
+
 app.ports.focus.subscribe(el => document.getElementById(el).select())
 
 const createNewGame = () => {
-    gamesRootRef.push({ timestamp: Date.now(), "game_state": {dummy: `"dummy state"`} }).then(data => {
+    gamesRootRef.push({ timestamp: Date.now(), game_state: `{"dummy": "dummy state"}`, game_started: false}).then(data => {
         console.log("  >> data: ", data.key)
         gameId = data.key
         app.ports.newGameCreated.send(data.key)
-        // window.location.href = `/?game_id=${data.key}`
     })
 }
 
 app.ports.createNewGame.subscribe(str => createNewGame())
 
 app.ports.usernameSelected.subscribe(name => {
-  watchGameState()
-
+  watchGameStarted()
   gameRef().child(`players`).transaction(
         players => {
             // console.log("  >>> players: ", players)
@@ -90,11 +104,6 @@ app.ports.usernameSelected.subscribe(name => {
               app.ports.setPlayers.send(snapshot.val())
               watchPlayers()
             }
-            // if (commited && snapshot.val() == 2) {
-            //     app.ports.setThisPlayer.send("BlackPlayer")
-            //     localStorage.setItem(gameId, "BlackPlayer")
-            // }
-
         },
         false
     )
@@ -114,8 +123,8 @@ const watchPlayers = () => {
 
 
 app.ports.sendGameStateNDef.subscribe(str => {
-    let compressed = str // compress(str)
-    gameRef().update({ game_state: compressed, timestamp: Date.now() })
+    let compressed = compress(str)
+    gameRef().update({ game_state: compressed, timestamp: Date.now(), game_started: true })
 })
 //
 // app.ports.alert.subscribe(str => window.alert(str))

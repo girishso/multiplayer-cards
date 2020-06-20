@@ -35,7 +35,6 @@ takeCard card player =
 dropCardOnPile : Card -> Types.HeadOrTail -> Pile -> Player -> ( Player, Pile )
 dropCardOnPile card headOrTail pile player =
     ( takeCard card player, Pile.add card headOrTail pile )
-        |> Debug.log "dropCardOnPile"
 
 
 viewA : (Card -> msg) -> Maybe Card -> { a | cards : List Card } -> List (Html msg)

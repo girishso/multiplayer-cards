@@ -32,7 +32,7 @@ type Msg
     | SetUserName String
     | UsernameSelected
     | SetPlayers (List String)
-    | StartPlaying
+    | StartPlaying ()
 
 
 type PageState
@@ -74,12 +74,11 @@ update global msg model =
         SetPlayers players ->
             ( model, Cmd.none, Global.setPlayers players )
 
-        StartPlaying ->
+        StartPlaying () ->
             ( model
             , Cmd.none
             , Cmd.batch
-                [ Global.setPlayers [ "xyz" ]
-                , Global.navigate (Route.Play model.gameId)
+                [ Global.navigate (Route.Play model.gameId)
                 ]
             )
 
@@ -124,7 +123,7 @@ view ({ gameDefinition } as global) model =
                         ++ (case ( List.length global.joinedPlayers == gameDefinition.numberOfPlayers, Maybe.Extra.isJust model.gameCreator ) of
                                 ( True, True ) ->
                                     [ h3 [] [ text "All players have joined! Yay!!" ]
-                                    , button [ HE.onClick StartPlaying ] [ text "Start Playing" ]
+                                    , button [ HE.onClick (StartPlaying ()) ] [ text "Start Playing" ]
                                     ]
 
                                 ( True, False ) ->
@@ -143,7 +142,10 @@ view ({ gameDefinition } as global) model =
 
 subscriptions : Global.Model -> Model -> Sub Msg
 subscriptions global model =
-    Ports.setPlayers SetPlayers
+    Sub.batch
+        [ Ports.setPlayers SetPlayers
+        , Ports.gameStarted StartPlaying
+        ]
 
 
 init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )

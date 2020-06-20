@@ -42,3 +42,6 @@ port sendGameStateNDef : String -> Cmd msg
 
 
 port gameStateNDefChanged : (Decode.Value -> msg) -> Sub msg
+
+
+port gameStarted : (() -> msg) -> Sub msg

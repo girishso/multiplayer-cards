@@ -83,8 +83,7 @@ update global msg ({ playState, localState } as model) =
                     setPlayState { playState | players = players } model
             in
             ( newModel
-            , Encode.encode 1 (playStateNDefEncoder { playState = newModel.playState, gameDefinition = global.gameDefinition })
-                |> Ports.sendGameStateNDef
+            , sendGameStateNDefHelper global newModel.playState
             , Cmd.none
             )
 
@@ -103,11 +102,14 @@ update global msg ({ playState, localState } as model) =
                                 , currentPlayerIx = setNextPlayerIx newPlayers playState.currentPlayerIx
                                 }
                            )
+
+                newModel =
+                    model
+                        |> setLocalState { localState | selectedCard = Nothing, myIx = setNextPlayerIx newPlayState.players localState.myIx }
+                        |> setPlayState newPlayState
             in
-            ( model
-                |> setLocalState { localState | selectedCard = Nothing, myIx = setNextPlayerIx newPlayState.players localState.myIx }
-                |> setPlayState newPlayState
-            , Cmd.none
+            ( newModel
+            , sendGameStateNDefHelper global newModel.playState
             , Cmd.none
             )
 
@@ -153,6 +155,11 @@ update global msg ({ playState, localState } as model) =
             , Cmd.none
             , Cmd.none
             )
+
+
+sendGameStateNDefHelper global playState =
+    Encode.encode 0 (playStateNDefEncoder { playState = playState, gameDefinition = global.gameDefinition })
+        |> Ports.sendGameStateNDef
 
 
 subscriptions : Global.Model -> Model -> Sub Msg
@@ -409,6 +416,9 @@ playStateEncoder v =
           )
         , ( "piles"
           , Encode.list Pile.encoder v.piles
+          )
+        , ( "currentPlayerIx"
+          , Encode.int v.currentPlayerIx
           )
         ]
 

@@ -88,7 +88,7 @@ init route =
 
 update : Msg -> Model -> Global.Model -> ( Model, Cmd Msg, Cmd Global.Msg )
 update bigMsg bigModel =
-    case Debug.log "pages.update" ( bigMsg, bigModel ) of
+    case ( bigMsg, bigModel ) of
         ( Top_Msg msg, Top_Model model ) ->
             pages.top.update msg model
 
