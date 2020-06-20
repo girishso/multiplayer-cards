@@ -25,7 +25,7 @@ import Types
 
 
 type alias Flags =
-    ()
+    { gameId : String }
 
 
 type alias Model =
@@ -42,7 +42,7 @@ type alias PlayState =
 
 
 type alias LocalState =
-    { selfPlayerIx : Int
+    { myIx : Int
     , selectedCard : Maybe Card
     , windowHeight : Int
     , windowWidth : Int
@@ -96,7 +96,7 @@ update ({ gameDefinition } as global) msg ({ playState, localState } as model) =
                            )
             in
             ( model
-                |> setLocalState { localState | selectedCard = Nothing, selfPlayerIx = setNextPlayerIx newPlayState.players localState.selfPlayerIx }
+                |> setLocalState { localState | selectedCard = Nothing, myIx = setNextPlayerIx newPlayState.players localState.myIx }
                 |> setPlayState newPlayState
             , Cmd.none
             , Cmd.none
@@ -158,7 +158,7 @@ isCardSelected { localState } =
 
 isSelfPlayersTurn : PlayState -> LocalState -> Bool
 isSelfPlayersTurn playState localState =
-    localState.selfPlayerIx == playState.currentPlayerIx
+    localState.myIx == playState.currentPlayerIx
 
 
 getSelectedCard : Model -> Maybe Card
@@ -169,7 +169,7 @@ getSelectedCard { localState } =
 getSelfPlayer : List Player -> LocalState -> Player
 getSelfPlayer players localState =
     players
-        |> List.Extra.getAt localState.selfPlayerIx
+        |> List.Extra.getAt localState.myIx
         |> Maybe.withDefault Player.default
 
 
@@ -237,7 +237,7 @@ viewPlayer : LocalState -> PlayState -> Int -> Player -> Html Msg
 viewPlayer localState playState playerIx player =
     let
         viewCards =
-            case ( playerIx == localState.selfPlayerIx, isSelfPlayersTurn playState localState ) of
+            case ( playerIx == localState.myIx, isSelfPlayersTurn playState localState ) of
                 ( True, True ) ->
                     Player.viewSpanWithClick CardSelected localState.selectedCard player
 
@@ -293,7 +293,7 @@ initPlayState gameDefinition =
 
 initLocalState : PlayState -> LocalState
 initLocalState { players } =
-    { selfPlayerIx = 0
+    { myIx = 0
     , selectedCard = Nothing
     , windowHeight = 0
     , windowWidth = 0

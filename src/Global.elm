@@ -23,6 +23,7 @@ type alias Model =
     , url : Url
     , key : Nav.Key
     , gameDefinition : GameDefinition
+    , waitingPlayers : List String
     }
 
 
@@ -39,6 +40,7 @@ init flags url key =
       , url = url
       , key = key
       , gameDefinition = initGameDefinition
+      , waitingPlayers = []
       }
     , Cmd.none
     )
@@ -54,7 +56,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "globalMsg" msg of
         Navigate route ->
             ( model
             , Nav.pushUrl model.key (Route.toHref route)

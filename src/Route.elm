@@ -5,13 +5,20 @@ module Route exposing
     )
 
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser)
+import Url.Builder as Builder
+import Url.Parser as Parser exposing ((</>), (<?>), Parser)
+import Url.Parser.Query as Query
+
+
+type alias GameId =
+    String
 
 
 type Route
     = Top
     | NotFound
-    | Play
+    | Play GameId
+    | Waiting GameId (Maybe String)
 
 
 fromUrl : Url -> Maybe Route
@@ -24,25 +31,26 @@ routes =
     Parser.oneOf
         [ Parser.map Top Parser.top
         , Parser.map NotFound (Parser.s "not-found")
-        , Parser.map Play (Parser.s "play")
+        , Parser.map Play (Parser.string </> Parser.s "play")
+        , Parser.map Waiting (Parser.string </> Parser.s "waiting" <?> Query.string "game_url")
         ]
 
 
 toHref : Route -> String
 toHref route =
-    let
-        segments : List String
-        segments =
-            case route of
-                Top ->
-                    []
+    case route of
+        Top ->
+            Builder.absolute [] []
 
-                NotFound ->
-                    [ "not-found" ]
+        NotFound ->
+            Builder.absolute [ "not-found" ] []
 
-                Play ->
-                    [ "play" ]
-    in
-    segments
-        |> String.join "/"
-        |> String.append "/"
+        Play gameId ->
+            Builder.absolute [ gameId, "play" ] []
+
+        Waiting gameId gameUrl ->
+            Builder.absolute [ gameId, "waiting" ]
+                (gameUrl
+                    |> Maybe.map (\u -> [ Builder.string "game_url" u ])
+                    |> Maybe.withDefault []
+                )

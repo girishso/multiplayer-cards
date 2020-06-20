@@ -7,6 +7,7 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Page exposing (Document, Page)
 import Ports
+import Route
 import Url exposing (Url)
 
 
@@ -15,14 +16,12 @@ type alias Flags =
 
 
 type alias Model =
-    { gameUrl : String }
+    { gameUrl : String, newGameId : String }
 
 
 type Msg
     = StartNewGame
     | NewGameCreated String
-    | SelectGameUrlInput
-    | GotoGame
 
 
 page : Page Flags Model Msg
@@ -42,13 +41,10 @@ update global msg model =
             ( model, Ports.createNewGame "String", Cmd.none )
 
         NewGameCreated gameId ->
-            ( { model | gameUrl = global.flags.url ++ gameIdParam ++ gameId }, Cmd.none, Cmd.none )
-
-        SelectGameUrlInput ->
-            ( model, Ports.focus "url_input", Cmd.none )
-
-        GotoGame ->
-            ( model, Cmd.none, Cmd.none )
+            ( { model | gameUrl = global.flags.url ++ gameIdParam ++ gameId }
+            , Cmd.none
+            , Global.navigate (Route.Waiting gameId (Just (global.flags.url ++ gameIdParam ++ gameId)))
+            )
 
 
 gameIdParam : String
@@ -60,30 +56,7 @@ view : Global.Model -> Model -> Document Msg
 view global model =
     let
         btnOrCopy =
-            if String.contains gameIdParam model.gameUrl then
-                div []
-                    [ input
-                        [ HA.readonly True
-                        , HA.id "url_input"
-                        , HE.onClick SelectGameUrlInput
-                        , HA.value model.gameUrl
-                        , HA.style "width" "20%"
-                        ]
-                        []
-                    , br [] []
-                    , br [] []
-                    , button
-                        [ HA.id "copy_url_btn"
-                        , HA.attribute "data-clipboard-target" "#url_input"
-                        , HA.attribute "data-clipboard-text" model.gameUrl
-                        , HE.onClick GotoGame
-                        ]
-                        [ text "Copy To Clipboard"
-                        ]
-                    ]
-
-            else
-                button [ HE.onClick StartNewGame ] [ text "Start New Game" ]
+            button [ HE.onClick StartNewGame ] [ text "Start New Game" ]
     in
     { title = "Sara Cards"
     , body =
@@ -103,12 +76,12 @@ subscriptions global model =
 init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
 init global flags =
     let
-        gameUrl =
+        ( gameUrl, newGameId ) =
             case global.flags.gameId of
                 Just gameId ->
-                    global.flags.url ++ gameIdParam ++ gameId
+                    ( global.flags.url ++ gameIdParam ++ gameId, gameId )
 
                 Nothing ->
-                    global.flags.url
+                    ( global.flags.url, "" )
     in
-    ( { gameUrl = gameUrl }, Cmd.none, Cmd.none )
+    ( { gameUrl = gameUrl, newGameId = newGameId }, Cmd.none, Cmd.none )
