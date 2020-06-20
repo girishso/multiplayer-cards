@@ -50,7 +50,7 @@ type alias LocalState =
 
 
 type Msg
-    = ShuffleDeck Deck
+    = DeckShuffled Deck
     | CardSelected Card
     | CardDroppedOnPile Pile Types.HeadOrTail Card
     | Shuffle
@@ -72,7 +72,7 @@ page =
 update : Global.Model -> Msg -> Model -> ( Model, Cmd Msg, Cmd Global.Msg )
 update ({ gameDefinition } as global) msg ({ playState, localState } as model) =
     case msg of
-        ShuffleDeck deck ->
+        DeckShuffled deck ->
             let
                 players =
                     Deck.distribute2 playState.players deck
@@ -276,38 +276,59 @@ mainDivsHelper { w, h, t, l, c } =
 
 shuffle : { a | numberOfDecks : Int } -> Cmd Msg
 shuffle { numberOfDecks } =
-    Random.generate ShuffleDeck (Deck.randomDeck numberOfDecks)
+    Random.generate DeckShuffled (Deck.randomDeck numberOfDecks)
 
 
 
 ---- inits
 
 
-initPlayState : Global.GameDefinition -> PlayState
-initPlayState gameDefinition =
-    { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
-    , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix [])
-    , currentPlayerIx = 0
-    }
+initPlayState : Global.GameDefinition -> List String -> PlayState
+initPlayState gameDefinition joinedPlayers =
+    case joinedPlayers of
+        [] ->
+            -- all local for testing
+            { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
+            , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix [])
+            , currentPlayerIx = 0
+            }
+
+        _ ->
+            { players = joinedPlayers |> List.indexedMap (\ix name -> Player (playerId ix) name [])
+            , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix [])
+            , currentPlayerIx = 0
+            }
 
 
-initLocalState : PlayState -> LocalState
-initLocalState { players } =
-    { myIx = 0
-    , selectedCard = Nothing
-    , windowHeight = 0
-    , windowWidth = 0
-    }
+initLocalState : PlayState -> Global.Model -> LocalState
+initLocalState { players } { joinedPlayers, myPlayerName } =
+    case joinedPlayers of
+        [] ->
+            { myIx = 0
+            , selectedCard = Nothing
+            , windowHeight = 0
+            , windowWidth = 0
+            }
+
+        _ ->
+            { myIx =
+                players
+                    |> List.Extra.findIndex (\player -> player.name == myPlayerName)
+                    |> Maybe.withDefault 0
+            , selectedCard = Nothing
+            , windowHeight = 0
+            , windowWidth = 0
+            }
 
 
 init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
-init ({ gameDefinition } as global) flags =
+init ({ gameDefinition, joinedPlayers } as global) flags =
     let
         playState =
-            initPlayState gameDefinition
+            initPlayState gameDefinition joinedPlayers
     in
     ( { playState = playState
-      , localState = initLocalState playState
+      , localState = initLocalState playState global
       }
     , Cmd.batch
         [ shuffle gameDefinition
@@ -322,8 +343,31 @@ getWindowSize =
     Task.perform OnViewport Browser.Dom.getViewport
 
 
+type alias PlayStateNDef =
+    { playState : PlayState, gameDefinition : Global.GameDefinition }
+
+
 
 ---- encoders / decoders ---------
+
+
+playStateNDefEncoder : PlayStateNDef -> Encode.Value
+playStateNDefEncoder v =
+    Encode.object
+        [ ( "playState"
+          , playStateEncoder v.playState
+          )
+        , ( "gameDefinition"
+          , Global.gameDefinitionEncoder v.gameDefinition
+          )
+        ]
+
+
+playStateNDefDecoder : Decode.Decoder PlayStateNDef
+playStateNDefDecoder =
+    Decode.map2 PlayStateNDef
+        (Decode.field "playState" playStateDecoder)
+        (Decode.field "gameDefinition" Global.gameDefinitionDecoder)
 
 
 playStateEncoder : PlayState -> Encode.Value
