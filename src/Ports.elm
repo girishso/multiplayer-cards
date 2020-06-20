@@ -32,3 +32,9 @@ port createNewGame : String -> Cmd msg
 
 
 port newGameCreated : (String -> msg) -> Sub msg
+
+
+port usernameSelected : String -> Cmd msg
+
+
+port setPlayers : (List String -> msg) -> Sub msg

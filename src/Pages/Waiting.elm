@@ -22,6 +22,7 @@ type alias Model =
     , gameCreator : Maybe String
     , pageState : PageState
     , userName : String
+    , joinedPlayers : List String
     }
 
 
@@ -31,6 +32,7 @@ type Msg
     | StartWaiting
     | SetUserName String
     | UsernameSelected
+    | SetPlayers (List String)
 
 
 type PageState
@@ -65,7 +67,10 @@ update global msg model =
             ( { model | userName = v }, Cmd.none, Cmd.none )
 
         UsernameSelected ->
-            ( { model | pageState = Waiting }, Cmd.none, Cmd.none )
+            ( { model | pageState = Waiting }, Ports.usernameSelected model.userName, Cmd.none )
+
+        SetPlayers players ->
+            ( { model | joinedPlayers = players }, Cmd.none, Cmd.none )
 
 
 view : Global.Model -> Model -> Document Msg
@@ -81,7 +86,7 @@ view global model =
                             , HA.id "url_input"
                             , HE.onClick SelectGameUrlInput
                             , HA.value (model.gameUrl |> Maybe.withDefault "xx")
-                            , HA.style "width" "20%"
+                            , HA.style "width" "30%"
                             ]
                             []
                         , br [] []
@@ -114,7 +119,7 @@ view global model =
 
 subscriptions : Global.Model -> Model -> Sub Msg
 subscriptions global model =
-    Sub.none
+    Ports.setPlayers SetPlayers
 
 
 init : Global.Model -> Flags -> ( Model, Cmd Msg, Cmd Global.Msg )
@@ -131,6 +136,7 @@ init global flags =
                 else
                     NewGameCreated
             , userName = ""
+            , joinedPlayers = []
             }
     in
     ( model, Cmd.none, Cmd.none )

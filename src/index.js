@@ -14,6 +14,10 @@ const getParameterByName = (name_, url) => {
     return decodeURIComponent(results[2].replace(/\+/g, " ").trim())
 }
 
+const getGameId = () => {
+  return location.pathname.split('/')[1]
+}
+
 const c = new Clipboard("#copy_url_btn")
 
 const compress = str => LZString.compressToUTF16(str)
@@ -23,7 +27,8 @@ const firebase_config = require("../secrets/firebase-app-config.json")
 firebase.initializeApp(firebase_config)
 const gamesRootRef = firebase.database().ref("games/")
 
-const gameId = getParameterByName("game_id")
+let gameId = getGameId()
+console.log("gameId", gameId)
 
 var app = Elm.Main.init({
   node: document.getElementById('root'),
@@ -39,32 +44,55 @@ var app = Elm.Main.init({
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
-console.log("app", app)
 
 if (gameId !== null) {
-  gamesRootRef.child(gameId).on("value", state => {
-      const json = state.val()
-      // console.log("  >> joined state: ", json)
-      if (json.nPlayers >= 2) {
-          app.ports.newSharedGameCreated.send(gameId)
-      }
-      if (typeof json.game_state !== "undefined" && json.game_state !== null) {
-          let uncmpd = decompress(json.game_state)
-          // console.log("  >> uncmpd: ", uncmpd)
-          app.ports.gameStateChanged.send(JSON.parse(uncmpd))
-      }
-  })
+  // gamesRootRef.child(gameId).on("value", state => {
+  //     const json = state.val()
+  //     // console.log("  >> joined state: ", json)
+  //     if (json.nPlayers >= 2) {
+  //         app.ports.newSharedGameCreated.send(gameId)
+  //     }
+  //     if (typeof json.game_state !== "undefined" && json.game_state !== null) {
+  //         let uncmpd = decompress(json.game_state)
+  //         // console.log("  >> uncmpd: ", uncmpd)
+  //         app.ports.gameStateChanged.send(JSON.parse(uncmpd))
+  //     }
+  // })
 }
 
 app.ports.focus.subscribe(el => document.getElementById(el).select())
 const createNewGame = () => {
     gamesRootRef.push({ timestamp: Date.now() }).then(data => {
         console.log("  >> data: ", data.key)
+        gameId = data.key
         app.ports.newGameCreated.send(data.key)
         // window.location.href = `/?game_id=${data.key}`
     })
 }
 app.ports.createNewGame.subscribe(str => createNewGame())
+
+app.ports.usernameSelected.subscribe(name => {
+  gamesRootRef.child(gameId).child(`players`).transaction(
+        players => {
+            console.log("  >>> players: ", players)
+            localStorage.setItem("playerName", name)
+
+            let newPlayers = players === null ? [] : players
+            newPlayers.push(name)
+            return newPlayers
+        },
+        (e, commited, snapshot) => {
+            console.log("commited", commited, snapshot.val())
+            if(commited)
+              app.ports.setPlayers.send(snapshot.val())
+            // if (commited && snapshot.val() == 2) {
+            //     app.ports.setThisPlayer.send("BlackPlayer")
+            //     localStorage.setItem(gameId, "BlackPlayer")
+            // }
+        },
+        false
+    )
+})
 
 //
 // app.ports.sendGameState.subscribe(str => {
