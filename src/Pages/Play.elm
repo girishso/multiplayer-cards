@@ -321,12 +321,7 @@ mainDivsHelper { w, h, t, l, c } =
             -- String.fromInt i ++ "%"
             "50px"
     in
-    [ -- HA.style "width" (toPercent w)
-      -- HA.style "height" (toPercent h)
-      -- , HA.style "top" (toPercent t)
-      -- , HA.style "left" (toPercent l)
-      -- , HA.style "position" "absolute"
-      HA.class c
+    [ HA.class c
     ]
 
 
@@ -344,8 +339,12 @@ initPlayState gameDefinition joinedPlayers =
     case joinedPlayers of
         [] ->
             -- all local for testing
+            let
+                cards =
+                    Deck.fullSuit Cards.Hearts |> List.take 0
+            in
             { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
-            , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix [])
+            , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix cards)
             , currentPlayerIx = 0
             }
 
