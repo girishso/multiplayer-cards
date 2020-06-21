@@ -237,18 +237,11 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
     , body =
         [ Html.div
             [ HA.class "main" ]
-            [ div ({ c = "top-row", w = 100, h = 5, t = 0, l = 0 } |> mainDivsHelper)
-                [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
-
-            -- Piles
-            , div ({ c = "piles-container", w = 60, h = 40, t = 15, l = 22 } |> mainDivsHelper)
+            [ -- div ({ c = "top-row", w = 100, h = 5, t = 0, l = 0 } |> mainDivsHelper)
+              --     [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
+              -- Piles
+              div ({ c = "piles-container", w = 60, h = 40, t = 15, l = 22 } |> mainDivsHelper)
                 (List.map (viewPile model) playState.piles)
-
-            -- Left
-            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
-                (getNthRotatedPlayersList 3
-                    |> List.map (viewPlayer localState playState False)
-                )
 
             -- Top
             , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
@@ -266,6 +259,12 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
             , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 0
                     |> List.map (viewPlayer localState playState True)
+                )
+
+            -- Left
+            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
+                (getNthRotatedPlayersList 3
+                    |> List.map (viewPlayer localState playState False)
                 )
             ]
         ]
@@ -287,13 +286,13 @@ viewPlayer localState playState me player =
                     Player.viewBack player
     in
     Html.div []
-        [ Html.div [ HA.class "player playingCards faceImages" ]
+        [ div [ HA.class "player-name" ] [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
+        , Html.div [ HA.class "player playingCards faceImages" ]
             [ Html.ul
                 [ HA.class "hand"
                 ]
                 viewCards
             ]
-        , text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")")
         ]
 
 
@@ -319,14 +318,15 @@ mainDivsHelper : { h : Int, l : Int, t : Int, w : Int, c : String } -> List (Att
 mainDivsHelper { w, h, t, l, c } =
     let
         toPercent i =
-            String.fromInt i ++ "%"
+            -- String.fromInt i ++ "%"
+            "50px"
     in
-    [ HA.style "width" (toPercent w)
-    , HA.style "height" (toPercent h)
-    , HA.style "top" (toPercent t)
-    , HA.style "left" (toPercent l)
-    , HA.style "position" "absolute"
-    , HA.class c
+    [ -- HA.style "width" (toPercent w)
+      -- HA.style "height" (toPercent h)
+      -- , HA.style "top" (toPercent t)
+      -- , HA.style "left" (toPercent l)
+      -- , HA.style "position" "absolute"
+      HA.class c
     ]
 
 

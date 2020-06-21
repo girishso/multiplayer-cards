@@ -12,27 +12,21 @@
 body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
-  text-align: center;
-  color: #293c4b;
-  font-size: .8em;
+  /* color: #293c4b; */
 }
-
-.main {
-
-}
-
+/*
 .players, .piles {
   display: flex;
   justify-content: space-evenly;
   flex-wrap: wrap;
-}
+} */
 
 .player {
-  width: 20em;
+
 }
 
 .pile {
-  width: 6em;
+
 }
 
 .rotate-270 {
@@ -47,51 +41,134 @@ body {
   transform: rotate(180deg);
 }
 
-.main-table {
-  border: 1px solid #ccc;
-  width: 100%;
+.player-name {
+  font-size: 1em;
+  font-weight: 600;
+
+}
+.playingCards {
+  font-size: .8em;
 }
 
-.main-table td {
-  border: 1px dotted #ccc;
+.main {
+  display: grid;
+  grid-gap: .5em;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-rows: 1fr 8fr 2fr;
+  height: 100vh;
 }
 
 .player-container {
-  display: flex;
-  justify-content: space-evenly;
+  /* display: flex; */
+  /* justify-content: space-evenly; */
+  overflow: hidden;
 }
 
-.piles-container {
-  display: flex;
-  justify-content: space-evenly;
-  background-color: darkorange;
+.bottom-player > div,
+.top-player > div {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
 }
 
-.right-player {
-  background-color: aqua;
-  transform-origin: top left;
-  transform: rotate(90deg);
+.bottom-player .player-name {
+   padding: 1em;
+   white-space: nowrap;
+ }
+
+.top-player .player-name {
+   /* transform: rotate(90deg); */
+   transform: rotate(180deg);
+   align-self: baseline;
+   padding: 1em;
+   white-space: nowrap;
+ }
+
+
+.left-player .player-name {
+   transform: rotate(270deg);
+   top: 6em;
+   left: 1em;
+   position: relative;
+   grid-column: 2;
+   white-space: nowrap;
+ }
+
+.right-player .player-name {
+   transform: rotate(270deg);
+   top: 13em;
+   left: 0em;
+   position: relative;
+   /* padding: 1em; */
+   grid-column: 1;
+   transform-origin: top left;
+   white-space: nowrap;
+ }
+
+
+.right-player > div {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  justify-content: center;
+}
+
+.left-player > div {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  justify-content: center;
 }
 
 .top-row {
   background-color: turquoise;
+  grid-column: 1 / span 3;
+  grid-row: 1;
 }
 
 .top-player {
   background-color: yellow;
   overflow-y: hidden;
-
+  grid-column: 1 / span 3;
+  grid-row: 1;
+  /* height: 30%; */
 }
 
-.left-player {
+.right-player {
   background-color: aqua;
   transform-origin: top left;
+  grid-column: 3;
+  grid-row: 2;
+}
+.bottom-player .playingCards {
+  padding: 1.2em 0 0 0;
+}
+
+.right-player .playingCards,
+.left-player .playingCards {
   transform: rotate(90deg);
 }
 
 .bottom-player {
   background-color: yellow;
+  grid-column: 1 / span 3;
+  grid-row: 3;
 }
+
+.left-player {
+  background-color: aqua;
+  transform-origin: top left;
+  grid-column: 1;
+  grid-row: 2;
+  /* transform: rotate(90deg); */
+}
+
+.piles-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: darkorange;
+  grid-column: 2;
+  grid-row: 2;
+}
+
 /*
  * Made by Erik Terwan
  * 24th of November 2015
