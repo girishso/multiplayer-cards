@@ -58,6 +58,7 @@ type Msg
     | WindowResized Int Int
     | OnViewport Browser.Dom.Viewport
     | GameStateNDefChanged (Result Decode.Error PlayStateNDef)
+    | PassClicked
 
 
 page : Page Flags Model Msg
@@ -102,6 +103,23 @@ update global msg ({ playState, localState } as model) =
                                 , currentPlayerIx = getNextPlayerIx newPlayers playState.currentPlayerIx
                                 }
                            )
+
+                newModel =
+                    model
+                        |> setLocalState { localState | selectedCard = Nothing }
+                        |> setPlayState newPlayState
+            in
+            ( newModel
+            , sendGameStateNDefHelper global newModel.playState
+            , Cmd.none
+            )
+
+        PassClicked ->
+            let
+                newPlayState =
+                    { playState
+                        | currentPlayerIx = getNextPlayerIx playState.players playState.currentPlayerIx
+                    }
 
                 newModel =
                     model
@@ -257,8 +275,10 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
 
             -- Bottom
             , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
-                (getNthRotatedPlayersList 0
+                ((getNthRotatedPlayersList 0
                     |> List.map (viewPlayer localState playState True)
+                 )
+                    ++ [ button [ HA.class "pass-btn", HE.onClick PassClicked ] [ text "Pass" ] ]
                 )
 
             -- Left

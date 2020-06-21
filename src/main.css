@@ -164,6 +164,12 @@ body {
   margin-top: -6em;
 }
 
+.pass-btn {
+position: absolute;
+
+top: 0;
+}
+
 /* mobile */
 
 @media (min-width: 320px) {
