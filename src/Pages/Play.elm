@@ -237,21 +237,21 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
     , body =
         [ Html.div
             [ HA.class "main" ]
-            [ div ({ c = "top-row", w = 100, h = 10, t = 0, l = 0 } |> mainDivsHelper)
+            [ div ({ c = "top-row", w = 100, h = 5, t = 0, l = 0 } |> mainDivsHelper)
                 [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
 
             -- Piles
-            , div ({ c = "piles-container", w = 60, h = 40, t = 20, l = 22 } |> mainDivsHelper)
+            , div ({ c = "piles-container", w = 60, h = 40, t = 15, l = 22 } |> mainDivsHelper)
                 (List.map (viewPile model) playState.piles)
 
             -- Left
-            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 20, l = 5 } |> mainDivsHelper)
+            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 3
                     |> List.map (viewPlayer localState playState False)
                 )
 
             -- Top
-            , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 10, l = 0 } |> mainDivsHelper)
+            , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 2
                     |> List.map (viewPlayer localState playState False)
                 )

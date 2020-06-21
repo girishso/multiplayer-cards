@@ -1,6 +1,7 @@
 {
   "devDependencies": {
-    "create-elm-app": "^4.2.25"
+    "create-elm-app": "^4.2.25",
+    "tether": "^1.4.7"
   },
   "scripts": {
     "build": "ELM_DEBUGGER=true elm-app build"
