@@ -237,6 +237,27 @@ rankStr rank =
             "K"
 
 
+suitToInt : Suit -> Int
+suitToInt suit =
+    case suit of
+        Hearts ->
+            1
+
+        Spades ->
+            100
+
+        Diamonds ->
+            1000
+
+        Clubs ->
+            10000
+
+
+value : Card -> Int
+value card =
+    suitToInt card.suit + rankToInt card.rank
+
+
 eql : Card -> Card -> Bool
 eql a b =
     (a.suit == b.suit) && (a.rank == b.rank)

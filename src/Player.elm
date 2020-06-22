@@ -49,12 +49,17 @@ viewA cardSelectedMsg maybeSelectedCard player =
 
 viewSpanWithClick : (Card -> msg) -> Maybe Card -> { a | cards : List Card } -> List (Html msg)
 viewSpanWithClick cardSelectedMsg maybeSelectedCard player =
-    List.map (Cards.viewSpanWithClick cardSelectedMsg maybeSelectedCard) player.cards
+    player.cards
+        -- |> List.sortBy (\c -> Cards.suitToInt c.suit)
+        |> List.sortBy (\c -> Cards.value c)
+        |> List.map (Cards.viewSpanWithClick cardSelectedMsg maybeSelectedCard)
 
 
 viewSpanNoClick : { a | cards : List Card } -> List (Html msg)
 viewSpanNoClick player =
-    List.map Cards.viewSpanNoClick player.cards
+    player.cards
+        |> List.sortBy (\c -> Cards.value c)
+        |> List.map Cards.viewSpanNoClick
 
 
 viewBack : { a | cards : List Card } -> List (Html msg)
