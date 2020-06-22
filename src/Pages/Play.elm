@@ -322,7 +322,11 @@ viewPlayer localState playState me player =
                     Player.viewBack player
     in
     Html.div []
-        [ div [ HA.class "player-name" ] [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
+        [ div
+            [ HA.class "player-name"
+            , HA.classList [ ( "current-player", rawPlayerId player.id == playState.currentPlayerIx ) ]
+            ]
+            [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
         , Html.div [ HA.class "player playingCards faceImages" ]
             [ Html.ul
                 [ HA.class "hand"

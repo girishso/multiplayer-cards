@@ -29,6 +29,10 @@ body {
 
 }
 
+.current-player.player-name {
+  color: red;
+}
+
 .playingCards {
   font-size: .8em;
 }
