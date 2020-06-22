@@ -106,7 +106,13 @@ update global msg ({ playState, localState } as model) =
 
                 newModel =
                     model
-                        |> setLocalState { localState | selectedCard = Nothing }
+                        |> setLocalState
+                            { localState
+                                | selectedCard = Nothing
+
+                                -- for testing locally
+                                , myIx = getNextPlayerIx newPlayState.players playState.currentPlayerIx
+                            }
                         |> setPlayState newPlayState
             in
             ( newModel
@@ -329,7 +335,7 @@ viewPile ({ localState, playState } as model) pile =
                         Pile.viewOnly pile
     in
     Html.div []
-        [ Html.div [ HA.class "pile playingCards faceImages suitTop" ]
+        [ Html.div [ HA.class "pile playingCards simpleCards suitTop" ]
             (viewPile_ pile)
         ]
 
