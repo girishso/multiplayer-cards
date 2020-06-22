@@ -22,6 +22,11 @@ default =
     Player (playerId 0) "" []
 
 
+doesHaveCard : Card -> Player -> Bool
+doesHaveCard card player =
+    List.member card player.cards
+
+
 giveCard : Card -> Player -> Player
 giveCard card player =
     { player | cards = card :: player.cards }

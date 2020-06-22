@@ -50,6 +50,11 @@ ranks =
     [ Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King ]
 
 
+init : Suit -> Rank -> Card
+init suit_ rank_ =
+    Card suit_ rank_
+
+
 
 --
 -- fullDeck : List Card

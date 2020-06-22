@@ -79,8 +79,18 @@ update global msg ({ playState, localState } as model) =
                 players =
                     Deck.distribute2 playState.players deck
 
+                hearts7Card =
+                    Cards.init Cards.Hearts Cards.Seven
+
+                playerWHearts7Ix =
+                    players
+                        |> List.filter (Player.doesHaveCard hearts7Card)
+                        |> List.head
+                        |> Maybe.map (\p -> rawPlayerId p.id)
+                        |> Maybe.withDefault 0
+
                 newModel =
-                    setPlayState { playState | players = players } model
+                    setPlayState { playState | players = players, currentPlayerIx = playerWHearts7Ix } model
             in
             ( newModel
             , sendGameStateNDefHelper global newModel.playState
@@ -196,9 +206,9 @@ getNextPlayerIx players currentPlayerIx =
         currentPlayerIx + 1
 
 
-setPlayState : a -> { b | playState : a } -> { b | playState : a }
-setPlayState v model =
-    { model | playState = v }
+setPlayState : PlayState -> Model -> Model
+setPlayState state modelx =
+    { modelx | playState = state }
 
 
 setLocalState : a -> { b | localState : a } -> { b | localState : a }
@@ -368,8 +378,13 @@ initPlayState gameDefinition joinedPlayers =
             let
                 cards =
                     Deck.fullSuit Cards.Hearts |> List.take 0
+
+                players =
+                    Helpers.makeListOf
+                        gameDefinition.numberOfPlayers
+                        (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
             in
-            { players = Helpers.makeListOf gameDefinition.numberOfPlayers (\ix n -> Player (playerId ix) ("Player " ++ String.fromInt n) [])
+            { players = players
             , piles = Helpers.makeListOf gameDefinition.numberOfPiles (\ix _ -> Pile.newTwoWayPile ix cards)
             , currentPlayerIx = 0
             }
