@@ -1,5 +1,6 @@
 module Helpers exposing (..)
 
+import Html
 import List.Extra
 
 
@@ -18,6 +19,7 @@ noneNone model =
     ( model, Cmd.none, Cmd.none )
 
 
+rotate : Int -> List a -> List a
 rotate n list =
     list
         |> List.Extra.splitAt n
@@ -25,3 +27,12 @@ rotate n list =
                 [ l2, l1 ]
                     |> List.concat
            )
+
+
+showIf : Bool -> Html.Html msg -> Html.Html msg
+showIf pred body =
+    if pred then
+        body
+
+    else
+        Html.text ""

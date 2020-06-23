@@ -111,12 +111,33 @@ view onClickHandler onDrop maybeSelectedCard pile =
 
 view_ : (Card -> msg) -> List Card -> List (Html msg)
 view_ onClickHandler cards =
-    List.map (Cards.viewSpan onClickHandler) cards
+    cards
+        |> dropMiddleCards
+        |> List.map (Cards.viewSpan onClickHandler)
 
 
 viewOnly_ : List Card -> List (Html msg)
 viewOnly_ cards =
-    List.map Cards.viewSpanNoClick cards
+    cards
+        |> dropMiddleCards
+        |> List.map Cards.viewSpanNoClick
+
+
+dropMiddleCards : List a -> List a
+dropMiddleCards cards =
+    case cards of
+        [] ->
+            []
+
+        [ _ ] ->
+            cards
+
+        [ _, _ ] ->
+            cards
+
+        _ ->
+            Maybe.map2 (\first last -> [ first, last ]) (List.head cards) (List.Extra.last cards)
+                |> Maybe.withDefault []
 
 
 viewOnly : Pile -> Html msg
