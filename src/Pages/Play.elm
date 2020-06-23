@@ -121,7 +121,7 @@ update global msg ({ playState, localState } as model) =
                                 | selectedCard = Nothing
 
                                 -- for testing locally
-                                , myIx = getNextPlayerIx newPlayState.players playState.currentPlayerIx
+                                -- , myIx = getNextPlayerIx newPlayState.players playState.currentPlayerIx
                             }
                         |> setPlayState newPlayState
             in

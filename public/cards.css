@@ -687,3 +687,30 @@
 .playingCards ul.deck li:nth-child(30) { left: 58px; bottom: 29px; }
 .playingCards ul.deck li:nth-child(31) { left: 60px; bottom: 30px; }
 .playingCards ul.deck li:nth-child(32) { left: 62px; bottom: 31px; }
+
+@media only screen and (-webkit-device-pixel-ratio: 1),
+only screen and (-moz-device-pixel-ratio: 1),
+only screen and (-o-device-pixel-ratio: 1/1),
+only screen and (-device-pixel-ratio: 1) {
+  /* big suits in middle */
+  .playingCards.simpleCards .card .suit:after,
+  .playingCards .card.rank-A .suit:after {
+    bottom: .35em;
+  }
+  .playingCards.simpleCards .card.diams .suit:after,
+  .playingCards .card.rank-A.diams .suit:after {
+    right: .4em;
+  }
+  .playingCards.simpleCards .card.hearts .suit:after,
+  .playingCards .card.rank-A.hearts .suit:after {
+    right: .35em;
+  }
+  .playingCards.simpleCards .card.spades .suit:after,
+  .playingCards .card.rank-A.spades .suit:after {
+    right: .35em;
+  }
+  .playingCards.simpleCards .card.clubs .suit:after,
+  .playingCards .card.rank-A.clubs .suit:after {
+    right: .3em;
+  }
+}
