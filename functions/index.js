@@ -32,7 +32,7 @@ exports.deleteOldGames = functions.https.onRequest((req, res) => {
 
     var ref = admin.database().ref("games/")
     var now = Date.now()
-    var cutoff = now - 3 * 60 * 60 * 1000 // 3 hours
+    var cutoff = now - 12 * 60 * 60 * 1000 // 12 hours
     // var cutoff = now - 1 * 60 * 1000
     var oldItemsQuery = ref.orderByChild("timestamp").endAt(cutoff)
     return oldItemsQuery.once("value", snapshot => {
