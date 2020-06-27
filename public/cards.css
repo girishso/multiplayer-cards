@@ -67,6 +67,7 @@
     text-indent: -4000px;
     background-color: #eee;
     border: 2px dashed #bbb;
+    opacity: 0.8;
 }
 .playingCards .card.dropzone.active:hover {
     background-color: #bdf4fd;
@@ -404,7 +405,7 @@
 .playingCards .card.joker .rank:after {
     font-family: Georgia, serif;
     position: absolute;
-    font-size: 3em;
+    font-size: 2em;
     right: .1em;
     bottom: .25em;
     word-spacing: normal;
