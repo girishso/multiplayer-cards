@@ -72,7 +72,6 @@ const watchGameStarted = () => {
   }
 };
 
-app.ports.focus.subscribe((el) => document.getElementById(el).select());
 
 const createNewGame = () => {
   gamesRootRef
@@ -87,8 +86,10 @@ const createNewGame = () => {
       app.ports.newGameCreated.send(data.key);
     });
 };
+watchGameStarted();
 
 app.ports.createNewGame.subscribe((str) => createNewGame());
+app.ports.focus.subscribe((el) => document.getElementById(el).select());
 
 app.ports.usernameSelected.subscribe((name) => {
   watchGameStarted();
@@ -118,6 +119,15 @@ app.ports.usernameSelected.subscribe((name) => {
     );
 });
 
+app.ports.sendGameStateNDef.subscribe((str) => {
+  let compressed = compress(str);
+  gameRef().update({
+    game_state: compressed,
+    timestamp: Date.now(),
+    game_started: true,
+  });
+});
+
 const watchPlayers = () => {
   if (gameRef() !== null) {
     gameRef()
@@ -129,14 +139,6 @@ const watchPlayers = () => {
   }
 };
 
-app.ports.sendGameStateNDef.subscribe((str) => {
-  let compressed = compress(str);
-  gameRef().update({
-    game_state: compressed,
-    timestamp: Date.now(),
-    game_started: true,
-  });
-});
 //
 // app.ports.alert.subscribe(str => window.alert(str))
 //
