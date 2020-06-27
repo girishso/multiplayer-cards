@@ -692,7 +692,9 @@
 @media only screen and (-webkit-device-pixel-ratio: 1),
 only screen and (-moz-device-pixel-ratio: 1),
 only screen and (-o-device-pixel-ratio: 1/1),
-only screen and (-device-pixel-ratio: 1) {
+only screen and (-device-pixel-ratio: 1),
+only screen and (-webkit-device-pixel-ratio: 3),
+only screen and (-device-pixel-ratio: 3) {
   /* big suits in middle */
   .playingCards.simpleCards .card .suit:after,
   .playingCards .card.rank-A .suit:after {
@@ -714,4 +716,20 @@ only screen and (-device-pixel-ratio: 1) {
   .playingCards .card.rank-A.clubs .suit:after {
     right: .3em;
   }
+}
+
+@media only screen and (-webkit-device-pixel-ratio: 3),
+only screen and (-device-pixel-ratio: 3) {
+  /* big suits in middle */
+
+  .playingCards .card .suit:after {
+    right: .4em;
+    font-size: 1em;
+  }
+
+  .playingCards .card .suit {
+    right: .3em;
+    font-size: .8em;
+  }
+
 }
