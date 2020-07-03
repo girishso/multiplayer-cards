@@ -22,8 +22,8 @@ default =
     Player (playerId 0) "" []
 
 
-doesHaveCard : Card -> Player -> Bool
-doesHaveCard card player =
+hasCard : Card -> Player -> Bool
+hasCard card player =
     List.member card player.cards
 
 

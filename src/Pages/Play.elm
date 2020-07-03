@@ -84,7 +84,7 @@ update global msg ({ playState, localState } as model) =
 
                 playerWHearts7Ix =
                     players
-                        |> List.filter (Player.doesHaveCard hearts7Card)
+                        |> List.filter (Player.hasCard hearts7Card)
                         |> List.head
                         |> Maybe.map (\p -> rawPlayerId p.id)
                         |> Maybe.withDefault 0
