@@ -175,7 +175,12 @@ body {
   /* margin-top: -6em; */
 }
 
-.pass-btn {
+.buttons {
+  display: flex;
+  flex-direction: column;
+}
+
+.pass-btn, .undo-btn {
   position: relative;
   top: 1em;
   width: 10em;

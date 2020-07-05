@@ -48,6 +48,7 @@ const watchGameState = () => {
         if (typeof json !== 'undefined' && json !== null) {
           const uncmpd = decompress(json);
           // console.log("  >> uncmpd: ", uncmpd)
+          console.log("gameStateNDefChanged")
 
           const parsed = JSON.parse(uncmpd);
           app.ports.gameStateNDefChanged.send(parsed);

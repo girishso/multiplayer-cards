@@ -47,6 +47,7 @@ type alias LocalState =
     , selectedCard : Maybe Card
     , windowHeight : Int
     , windowWidth : Int
+    , prevPlayState : Maybe PlayState
     }
 
 
@@ -59,6 +60,7 @@ type Msg
     | OnViewport Browser.Dom.Viewport
     | GameStateNDefChanged (Result Decode.Error PlayStateNDef)
     | PassClicked
+    | UndoClicked
 
 
 page : Page Flags Model Msg
@@ -110,7 +112,7 @@ update global msg ({ playState, localState } as model) =
                         |> (\( newPlayers, newPiles ) ->
                                 { players = newPlayers
                                 , piles = newPiles
-                                , currentPlayerIx = getNextPlayerIx newPlayers playState.currentPlayerIx
+                                , currentPlayerIx = getNextPlayerIx playState
                                 }
                            )
 
@@ -119,6 +121,7 @@ update global msg ({ playState, localState } as model) =
                         |> setLocalState
                             { localState
                                 | selectedCard = Nothing
+                                , prevPlayState = Just playState
 
                                 -- for testing locally
                                 -- , myIx = getNextPlayerIx newPlayState.players playState.currentPlayerIx
@@ -130,16 +133,41 @@ update global msg ({ playState, localState } as model) =
             , Cmd.none
             )
 
+        UndoClicked ->
+            let
+                ( newPlayState, newCmd ) =
+                    localState.prevPlayState
+                        |> Maybe.map (\ps -> ( ps, sendGameStateNDefHelper global ps ))
+                        |> Maybe.withDefault ( playState, Cmd.none )
+
+                newModel =
+                    model
+                        |> setLocalState
+                            { localState
+                                | selectedCard = Nothing
+                                , prevPlayState = Nothing
+                            }
+                        |> setPlayState newPlayState
+            in
+            ( newModel
+            , newCmd
+            , Cmd.none
+            )
+
         PassClicked ->
             let
                 newPlayState =
                     { playState
-                        | currentPlayerIx = getNextPlayerIx playState.players playState.currentPlayerIx
+                        | currentPlayerIx = getNextPlayerIx playState
                     }
 
                 newModel =
                     model
-                        |> setLocalState { localState | selectedCard = Nothing }
+                        |> setLocalState
+                            { localState
+                                | selectedCard = Nothing
+                                , prevPlayState = Just playState
+                            }
                         |> setPlayState newPlayState
             in
             ( newModel
@@ -197,13 +225,22 @@ subscriptions global model =
         ]
 
 
-getNextPlayerIx : List Player -> Int -> Int
-getNextPlayerIx players currentPlayerIx =
+getNextPlayerIx : PlayState -> Int
+getNextPlayerIx { players, currentPlayerIx } =
     if List.length players == currentPlayerIx + 1 then
         0
 
     else
         currentPlayerIx + 1
+
+
+getPrevPlayerIx : PlayState -> Int
+getPrevPlayerIx { players, currentPlayerIx } =
+    if currentPlayerIx == 0 then
+        List.length players - 1
+
+    else
+        currentPlayerIx - 1
 
 
 setPlayState : PlayState -> Model -> Model
@@ -331,7 +368,10 @@ viewPlayer localState playState me player =
                 ]
                 viewCards
             ]
-        , Helpers.showIf me (button [ HA.class "pass-btn", HE.onClick PassClicked ] [ text "Pass" ])
+        , Html.div [ HA.class "buttons" ]
+            [ Helpers.showIf me (button [ HA.class "pass-btn", HE.onClick PassClicked ] [ text "Pass" ])
+            , Helpers.showIf (me && (getPrevPlayerIx playState == localState.myIx)) (button [ HA.class "undo-btn", HE.onClick UndoClicked ] [ text "Undo" ])
+            ]
         ]
 
 
@@ -407,6 +447,7 @@ initLocalState { players } { joinedPlayers, myPlayerName } =
             , selectedCard = Nothing
             , windowHeight = 0
             , windowWidth = 0
+            , prevPlayState = Nothing
             }
 
         _ ->
@@ -417,6 +458,7 @@ initLocalState { players } { joinedPlayers, myPlayerName } =
             , selectedCard = Nothing
             , windowHeight = 0
             , windowWidth = 0
+            , prevPlayState = Nothing
             }
 
 
