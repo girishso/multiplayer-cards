@@ -95,7 +95,7 @@ update global msg ({ playState, localState } as model) =
                     setPlayState { playState | players = players, currentPlayerIx = playerWHearts7Ix } model
             in
             ( newModel
-            , sendGameStateNDefHelper global newModel.playState
+            , sendGameStateNDefHelper global newModel.playState localState
             , Cmd.none
             )
 
@@ -129,7 +129,7 @@ update global msg ({ playState, localState } as model) =
                         |> setPlayState newPlayState
             in
             ( newModel
-            , sendGameStateNDefHelper global newModel.playState
+            , sendGameStateNDefHelper global newModel.playState newModel.localState
             , Cmd.none
             )
 
@@ -137,7 +137,7 @@ update global msg ({ playState, localState } as model) =
             let
                 ( newPlayState, newCmd ) =
                     localState.prevPlayState
-                        |> Maybe.map (\ps -> ( ps, sendGameStateNDefHelper global ps ))
+                        |> Maybe.map (\ps -> ( ps, sendGameStateNDefHelper global ps localState ))
                         |> Maybe.withDefault ( playState, Cmd.none )
 
                 newModel =
@@ -171,7 +171,7 @@ update global msg ({ playState, localState } as model) =
                         |> setPlayState newPlayState
             in
             ( newModel
-            , sendGameStateNDefHelper global newModel.playState
+            , sendGameStateNDefHelper global newModel.playState localState
             , Cmd.none
             )
 
@@ -212,8 +212,15 @@ update global msg ({ playState, localState } as model) =
             )
 
 
-sendGameStateNDefHelper global playState =
-    Encode.encode 0 (playStateNDefEncoder { playState = playState, gameDefinition = global.gameDefinition })
+sendGameStateNDefHelper global playState localState =
+    let
+        name =
+            playState.players
+                |> List.Extra.getAt localState.myIx
+                |> Maybe.map .name
+                |> Maybe.withDefault "anon"
+    in
+    ( name, Encode.encode 0 (playStateNDefEncoder { playState = playState, gameDefinition = global.gameDefinition }) )
         |> Ports.sendGameStateNDef
 
 

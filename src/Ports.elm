@@ -38,7 +38,7 @@ port usernameSelected : String -> Cmd msg
 port setPlayers : (List String -> msg) -> Sub msg
 
 
-port sendGameStateNDef : String -> Cmd msg
+port sendGameStateNDef : ( String, String ) -> Cmd msg
 
 
 port gameStateNDefChanged : (Decode.Value -> msg) -> Sub msg

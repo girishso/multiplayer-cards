@@ -42,13 +42,13 @@ const watchGameState = () => {
     gameRef()
       .child('game_state')
       .on('value', (state) => {
-        const json = state.val();
+        const [name, json] = state.val();
         // console.log("  >> joined state: ", json)
 
         if (typeof json !== 'undefined' && json !== null) {
           const uncmpd = decompress(json);
           // console.log("  >> uncmpd: ", uncmpd)
-          console.log("gameStateNDefChanged")
+          console.log("gameStateNDefChanged", name)
 
           const parsed = JSON.parse(uncmpd);
           app.ports.gameStateNDefChanged.send(parsed);
@@ -120,10 +120,11 @@ app.ports.usernameSelected.subscribe((name) => {
     );
 });
 
-app.ports.sendGameStateNDef.subscribe((str) => {
+app.ports.sendGameStateNDef.subscribe(([name, str]) => {
+  console.log("sendGameStateNDef",name, str);
   let compressed = compress(str);
   gameRef().update({
-    game_state: compressed,
+    game_state: [name, compressed],
     timestamp: Date.now(),
     game_started: true,
   });
