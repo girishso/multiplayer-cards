@@ -121,7 +121,7 @@ app.ports.usernameSelected.subscribe((name) => {
 });
 
 app.ports.sendGameStateNDef.subscribe(([name, str]) => {
-  console.log("sendGameStateNDef",name, str);
+  // console.log("sendGameStateNDef",name);
   let compressed = compress(str);
   gameRef().update({
     game_state: [name, compressed],
