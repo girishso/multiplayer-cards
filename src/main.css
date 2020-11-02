@@ -29,6 +29,7 @@ body {
 .player-name {
   font-size: 1em;
   font-weight: 600;
+  background-color: grey;
 }
 
 .current-player.player-name {
@@ -37,6 +38,7 @@ body {
 
 .playingCards {
   font-size: .8em;
+  background-color: yellow;
 }
 
 .bottom-player .playingCards {
@@ -78,23 +80,29 @@ body {
 }
 
 .left-player .player-name {
-  transform: rotate(270deg) translateX(-6em);
-  top: 6em;
-  left: 1em;
-  position: relative;
+  /* transform: rotate(270deg); */
+   /* translateX(-6em); */
+  /* top: 6em; */
+  /* left: 1em; */
+  /* position: relative; */
   grid-column: 2;
   white-space: nowrap;
+  writing-mode:vertical-rl;
+  text-align: center;
 }
 
 .right-player .player-name {
-  transform: rotate(270deg);
-  top: 13em;
-  left: 0em;
-  position: relative;
+  /* transform: rotate(270deg); */
+  /* top: 13em; */
+  /* left: 0em; */
+  /* position: relative; */
   /* padding: 1em; */
   grid-column: 1;
-  transform-origin: top left;
+  /* transform-origin: top left; */
   white-space: nowrap;
+  writing-mode:vertical-rl;
+  text-align: center;
+
 }
 
 .right-player>div {
@@ -125,7 +133,7 @@ body {
 
 .right-player {
   /* background-color: aqua; */
-  transform-origin: top left;
+  /* transform-origin: top left; */
   grid-column: 3;
   grid-row: 2;
   display: grid;
@@ -140,8 +148,8 @@ body {
 
 .right-player .playingCards,
 .left-player .playingCards {
-  transform: rotate(90deg) translateX(4em);
-  transform-origin: top;
+  /* transform: rotate(90deg) translateX(4em); */
+  /* transform-origin: top; */
 }
 
 .bottom-player {

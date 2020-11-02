@@ -324,33 +324,33 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
             -- Top
             , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 2
-                    |> viewPlayer localState playState False
+                    |> viewPlayer localState playState False False
                 )
 
             -- Right
             , div ({ c = "right-player rotate-90x player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 1
-                    |> viewPlayer localState playState False
+                    |> viewPlayer localState playState False True
                 )
 
             -- Bottom
             , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 0
-                    |> viewPlayer localState playState True
+                    |> viewPlayer localState playState True False
                 )
 
             -- Left
             , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 3
-                    |> viewPlayer localState playState False
+                    |> viewPlayer localState playState False True
                 )
             ]
         ]
     }
 
 
-viewPlayer : LocalState -> PlayState -> Bool -> List Player -> List (Html Msg)
-viewPlayer localState playState me players =
+viewPlayer : LocalState -> PlayState -> Bool -> Bool -> List Player -> List (Html Msg)
+viewPlayer localState playState me rotated players =
     let
         viewCards player =
             case ( me, isMyTurn playState localState ) of
@@ -372,9 +372,11 @@ viewPlayer localState playState me players =
                 [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
             , Html.div [ HA.class "player playingCards faceImages" ]
                 [ Html.ul
-                    [ HA.class "hand"
+                    [ HA.classList [ ( "rotated", rotated ), ( "hand", True ) ]
                     ]
                     (viewCards player)
+
+                -- [ Html.text "Meee! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed iaculis libero id tincidunt consectetur. Etiam eget nunc quis justo aliquam mollis ac ac enim. Donec vel dignissim magna. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam varius, sem et consequat tincidunt, enim erat tincidunt felis, eget auctor eros est ut lectus." ]
                 ]
             , Helpers.showIf me <|
                 Html.div [ HA.class "buttons" ]
