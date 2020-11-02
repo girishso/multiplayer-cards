@@ -7,7 +7,8 @@
     "build": "ELM_DEBUGGER=true elm-app build"
   },
   "dependencies": {
-    "firebase": "^7.15.1",
+    "firebase": "^7.21.1",
+    "firebase-app": "0.0.1",
     "lz-string": "^1.4.4"
   }
 }

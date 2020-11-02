@@ -2,7 +2,9 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 import LZString from 'lz-string';
-import firebase from 'firebase';
+import * as firebase from "firebase/app";
+import "firebase/firebase-auth";
+import "firebase/firebase-database";
 
 const getGameId = () => location.pathname.split('/')[1];
 
