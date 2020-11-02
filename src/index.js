@@ -1,4 +1,5 @@
 import './main.css';
+import './menu.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 import LZString from 'lz-string';
