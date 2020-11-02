@@ -4,9 +4,7 @@ import Browser
 import Browser.Navigation as Nav exposing (Key)
 import Global
 import Html exposing (..)
-import Html.Attributes as HA
 import Pages.Pages as Pages
-import Ports
 import Route as Route exposing (Route)
 import Url exposing (Url)
 
@@ -24,7 +22,12 @@ type alias Model =
 
 
 type alias Flags =
-    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String, playerName : Maybe String }
+    { windowWidth : Int
+    , windowHeight : Int
+    , gameId : Maybe String
+    , url : String
+    , playerName : Maybe String
+    }
 
 
 

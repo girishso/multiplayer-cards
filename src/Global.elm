@@ -15,7 +15,12 @@ import Url exposing (Url)
 
 
 type alias Flags =
-    { windowWidth : Int, windowHeight : Int, gameId : Maybe String, url : String, playerName : Maybe String }
+    { windowWidth : Int
+    , windowHeight : Int
+    , gameId : Maybe String
+    , url : String
+    , playerName : Maybe String
+    }
 
 
 type alias Model =
@@ -92,7 +97,7 @@ view :
     , toMsg : Msg -> msg
     }
     -> Document msg
-view { page, global, toMsg } =
+view { page } =
     Components.layout
         { page = page
         }

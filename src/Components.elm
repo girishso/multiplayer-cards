@@ -10,7 +10,7 @@ layout : { page : Document msg } -> Document msg
 layout { page } =
     { title = page.title
     , body =
-        [ div [ class "" ]
+        [ div [ class "app" ]
             [ -- navbar
               div [] page.body
 

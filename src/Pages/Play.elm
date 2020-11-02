@@ -324,35 +324,35 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
             -- Top
             , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 2
-                    |> List.map (viewPlayer localState playState False)
+                    |> viewPlayer localState playState False
                 )
 
             -- Right
             , div ({ c = "right-player rotate-90x player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 1
-                    |> List.map (viewPlayer localState playState False)
+                    |> viewPlayer localState playState False
                 )
 
             -- Bottom
             , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 0
-                    |> List.map (viewPlayer localState playState True)
+                    |> viewPlayer localState playState True
                 )
 
             -- Left
             , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 3
-                    |> List.map (viewPlayer localState playState False)
+                    |> viewPlayer localState playState False
                 )
             ]
         ]
     }
 
 
-viewPlayer : LocalState -> PlayState -> Bool -> Player -> Html Msg
-viewPlayer localState playState me player =
+viewPlayer : LocalState -> PlayState -> Bool -> List Player -> List (Html Msg)
+viewPlayer localState playState me players =
     let
-        viewCards =
+        viewCards player =
             case ( me, isMyTurn playState localState ) of
                 ( True, True ) ->
                     Player.viewSpanWithClick CardSelected localState.selectedCard player
@@ -363,23 +363,28 @@ viewPlayer localState playState me player =
                 ( _, _ ) ->
                     Player.viewBack player
     in
-    Html.div []
-        [ div
-            [ HA.class "player-name"
-            , HA.classList [ ( "current-player", rawPlayerId player.id == playState.currentPlayerIx ) ]
-            ]
-            [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
-        , Html.div [ HA.class "player playingCards faceImages" ]
-            [ Html.ul
-                [ HA.class "hand"
+    case List.head players of
+        Just player ->
+            [ div
+                [ HA.class "player-name"
+                , HA.classList [ ( "current-player", rawPlayerId player.id == playState.currentPlayerIx ) ]
                 ]
-                viewCards
+                [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
+            , Html.div [ HA.class "player playingCards faceImages" ]
+                [ Html.ul
+                    [ HA.class "hand"
+                    ]
+                    (viewCards player)
+                ]
+            , Helpers.showIf me <|
+                Html.div [ HA.class "buttons" ]
+                    [ Helpers.showIf me (button [ HA.class "pass-btn", HE.onClick PassClicked ] [ text "Pass" ])
+                    , Helpers.showIf (me && (getPrevPlayerIx playState == localState.myIx)) (button [ HA.class "undo-btn", HE.onClick UndoClicked ] [ text "Undo" ])
+                    ]
             ]
-        , Html.div [ HA.class "buttons" ]
-            [ Helpers.showIf me (button [ HA.class "pass-btn", HE.onClick PassClicked ] [ text "Pass" ])
-            , Helpers.showIf (me && (getPrevPlayerIx playState == localState.myIx)) (button [ HA.class "undo-btn", HE.onClick UndoClicked ] [ text "Undo" ])
-            ]
-        ]
+
+        Nothing ->
+            []
 
 
 viewPile : Model -> Pile -> Html Msg
