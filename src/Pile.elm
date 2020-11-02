@@ -123,7 +123,10 @@ viewOnly_ cards =
         |> List.map Cards.viewSpanNoClick
 
 
-dropMiddleCards : List a -> List a
+
+-- dropMiddleCards : List a -> List a
+
+
 dropMiddleCards cards =
     case cards of
         [] ->
@@ -135,8 +138,27 @@ dropMiddleCards cards =
         [ _, _ ] ->
             cards
 
+        [ _, _, _ ] ->
+            cards
+
+        [ _, _, _, _ ] ->
+            cards
+
+        [ h, _, s, _, t ] ->
+            cards
+
         _ ->
-            Maybe.map2 (\first last -> [ first, last ]) (List.head cards) (List.Extra.last cards)
+            List.Extra.splitWhen (\card -> Cards.rankToInt card.rank == 7) cards
+                |> Maybe.map
+                    (\( upper, lower ) ->
+                        [ List.take 2 upper
+                        , List.take 1 lower
+                        , lower |> List.reverse |> List.take 2 |> List.reverse
+                        ]
+                            |> List.concat
+                            |> List.Extra.uniqueBy (\card -> Cards.rankToInt card.rank)
+                    )
+                -- Maybe.map2 (\first last -> [ first, last ]) (List.head cards) (List.Extra.last cards)
                 |> Maybe.withDefault []
 
 
