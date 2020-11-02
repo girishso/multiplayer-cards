@@ -129,7 +129,7 @@ setPlayers v =
 
 initGameDefinition : GameDefinition
 initGameDefinition =
-    { numberOfPlayers = 2
+    { numberOfPlayers = 4
     , numberOfDecks = 1
     , numberOfPiles = 4
     }

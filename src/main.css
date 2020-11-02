@@ -29,7 +29,7 @@ body {
 .player-name {
   font-size: 1em;
   font-weight: 600;
-  background-color: grey;
+  /* background-color: #aaa; */
 }
 
 .current-player.player-name {
@@ -38,7 +38,7 @@ body {
 
 .playingCards {
   font-size: .8em;
-  background-color: yellow;
+  /* background-color: yellow; */
 }
 
 .bottom-player .playingCards {
@@ -62,8 +62,7 @@ body {
 
 .bottom-player>div,
 .top-player>div {
-  display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
+
 }
 
 .bottom-player .player-name {
@@ -72,33 +71,22 @@ body {
 }
 
 .top-player .player-name {
-  /* transform: rotate(90deg); */
-  /* transform: rotate(180deg) translateX(0em); */
   align-self: baseline;
   padding: 1em;
   white-space: nowrap;
 }
 
 .left-player .player-name {
-  /* transform: rotate(270deg); */
-   /* translateX(-6em); */
-  /* top: 6em; */
-  /* left: 1em; */
-  /* position: relative; */
   grid-column: 2;
+  grid-row: 1;
   white-space: nowrap;
   writing-mode:vertical-rl;
   text-align: center;
+  transform: rotate( 180deg);
 }
 
 .right-player .player-name {
-  /* transform: rotate(270deg); */
-  /* top: 13em; */
-  /* left: 0em; */
-  /* position: relative; */
-  /* padding: 1em; */
   grid-column: 1;
-  /* transform-origin: top left; */
   white-space: nowrap;
   writing-mode:vertical-rl;
   text-align: center;
@@ -106,15 +94,11 @@ body {
 }
 
 .right-player>div {
-  /* display: grid;
-  grid-template-columns: 1fr 2fr;
-  justify-content: center; */
+
 }
 
 .left-player>div {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  justify-content: center;
+
 }
 
 .top-row {
@@ -127,13 +111,12 @@ body {
   /* background-color: yellow; */
   overflow-y: hidden;
   grid-column: 1 / span 3;
-  grid-row: 1;
-  /* height: 30%; */
+  display: grid;
+  grid-template-columns: auto 1fr;
 }
 
 .right-player {
   /* background-color: aqua; */
-  /* transform-origin: top left; */
   grid-column: 3;
   grid-row: 2;
   display: grid;
@@ -146,24 +129,46 @@ body {
   padding: 1.2em 0 0 0;
 }
 
-.right-player .playingCards,
-.left-player .playingCards {
-  /* transform: rotate(90deg) translateX(4em); */
-  /* transform-origin: top; */
+.bottom-player .hand-w {
+  position: fixed;
+  left: 50%;
+  margin-left: -10%;
+}
+
+.top-player .hand-w {
+  position: fixed;
+  left: 50%;
+  margin-left: -10%;
+  top: -8%;
+}
+
+.right-player .hand-w,
+.left-player .hand-w {
+  position: fixed;
+  top: 19%;
+}
+
+.right-player .playingCards {
+  margin-left: 2em;
 }
 
 .bottom-player {
   /* background-color: yellow; */
   grid-column: 1 / span 3;
   grid-row: 3;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
 }
 
 .left-player {
   /* background-color: aqua; */
-  transform-origin: top left;
   grid-column: 1;
   grid-row: 2;
-  /* transform: rotate(90deg); */
+
+  display: grid;
+  grid-template-columns: 2fr 3em;
+  justify-content: center;
+  position: relative;
 }
 
 .piles-container {

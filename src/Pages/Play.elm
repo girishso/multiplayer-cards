@@ -322,13 +322,13 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
                 (List.map (viewPile model) playState.piles)
 
             -- Top
-            , div ({ c = "top-player player-container rotate-180", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
+            , div ({ c = "top-player player-container", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 2
                     |> viewPlayer localState playState False False
                 )
 
             -- Right
-            , div ({ c = "right-player rotate-90x player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
+            , div ({ c = "right-player player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 1
                     |> viewPlayer localState playState False True
                 )
@@ -340,7 +340,7 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
                 )
 
             -- Left
-            , div ({ c = "left-player rotate-270x player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
+            , div ({ c = "left-player player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
                 (getNthRotatedPlayersList 3
                     |> viewPlayer localState playState False True
                 )
@@ -362,6 +362,16 @@ viewPlayer localState playState me rotated players =
 
                 ( _, _ ) ->
                     Player.viewBack player
+
+        numCards player =
+            List.length player.cards
+
+        min a b =
+            if a > b then
+                b
+
+            else
+                a
     in
     case List.head players of
         Just player ->
@@ -369,12 +379,16 @@ viewPlayer localState playState me rotated players =
                 [ HA.class "player-name"
                 , HA.classList [ ( "current-player", rawPlayerId player.id == playState.currentPlayerIx ) ]
                 ]
-                [ text (player.name ++ "(" ++ String.fromInt (List.length player.cards) ++ ")") ]
+                [ text (player.name ++ "(" ++ String.fromInt (numCards player) ++ ")") ]
             , Html.div [ HA.class "player playingCards faceImages" ]
-                [ Html.ul
-                    [ HA.classList [ ( "rotated", rotated ), ( "hand", True ) ]
+                [ div [ HA.class "hand-w" ]
+                    [ Html.ul
+                        [ HA.classList [ ( "rotated", rotated ), ( "hand", True ) ]
+
+                        -- , HA.style "left" ((min (numCards player - 25) 14 |> String.fromInt) ++ "em")
+                        ]
+                        (viewCards player)
                     ]
-                    (viewCards player)
 
                 -- [ Html.text "Meee! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed iaculis libero id tincidunt consectetur. Etiam eget nunc quis justo aliquam mollis ac ac enim. Donec vel dignissim magna. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam varius, sem et consequat tincidunt, enim erat tincidunt felis, eget auctor eros est ut lectus." ]
                 ]
