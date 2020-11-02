@@ -4,7 +4,7 @@
     "tether": "^1.4.7"
   },
   "scripts": {
-    "build-debug": "ELM_DEBUGGER=true elm-app build"
+    "build-debug": "ELM_DEBUGGER=true elm-app build",
     "build": "elm-app build"
   },
   "dependencies": {
