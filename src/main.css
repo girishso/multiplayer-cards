@@ -13,7 +13,7 @@
 body>div:not(.app) {
   /* Styles */
   background-color: burlywood !important;
-  top: 1em;
+  /* top: 1em; */
 }
 
 body {
@@ -72,7 +72,7 @@ body {
 
 .top-player .player-name {
   align-self: baseline;
-  padding: 1em;
+  padding: 0 1em;
   white-space: nowrap;
 }
 
@@ -139,7 +139,7 @@ body {
   position: fixed;
   left: 50%;
   margin-left: -10%;
-  top: -8%;
+  top: -5rem;
 }
 
 .right-player .hand-w,
@@ -196,6 +196,9 @@ body {
 .buttons {
   display: flex;
   flex-direction: column;
+  position: fixed;
+  top: 1vh;
+  left: 88vw;
   /* justify-content: space-between; */
 }
 
