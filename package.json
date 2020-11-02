@@ -4,7 +4,8 @@
     "tether": "^1.4.7"
   },
   "scripts": {
-    "build": "ELM_DEBUGGER=true elm-app build"
+    "build-debug": "ELM_DEBUGGER=true elm-app build"
+    "build": "elm-app build"
   },
   "dependencies": {
     "firebase": "^7.21.1",
