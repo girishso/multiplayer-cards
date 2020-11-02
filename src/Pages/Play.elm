@@ -179,17 +179,17 @@ update global msg ({ playState, localState } as model) =
             ( model, shuffle global.gameDefinition, Cmd.none )
 
         WindowResized w h ->
-            let
-                _ =
-                    Debug.log "WindowResized" ( w, h )
-            in
+            -- let
+            --     _ =
+            --         Debug.log "WindowResized" ( w, h )
+            -- in
             ( model |> setLocalState { localState | windowWidth = w, windowHeight = h }, Cmd.none, Cmd.none )
 
         OnViewport { viewport } ->
-            let
-                _ =
-                    Debug.log "viewport" viewport
-            in
+            -- let
+            --     _ =
+            --         Debug.log "viewport" viewport
+            -- in
             ( model |> setLocalState { localState | windowWidth = round viewport.width, windowHeight = round viewport.height }, Cmd.none, Cmd.none )
 
         GameStateNDefChanged json ->
@@ -443,7 +443,7 @@ shuffle { numberOfDecks } =
 
 initPlayState : Global.GameDefinition -> List String -> PlayState
 initPlayState gameDefinition joinedPlayers =
-    case Debug.log "joinedPlayers" joinedPlayers of
+    case joinedPlayers of
         [] ->
             -- all local for testing
             let
