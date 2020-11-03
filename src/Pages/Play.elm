@@ -310,37 +310,38 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
                             Nothing
                     )
                 |> List.filterMap identity
+                |> List.head
     in
     { title = "Badaam Saat - (Seven of Hearts)"
     , body =
         [ Html.div
             [ HA.class "main" ]
-            [ -- div ({ c = "top-row", w = 100, h = 5, t = 0, l = 0 } |> mainDivsHelper)
+            [ -- [HA.class = "top-row" ]
               --     [ "Current player: " ++ (getCurrentPlayer playState).name |> text ]
               -- Piles
-              div ({ c = "piles-container", w = 60, h = 40, t = 15, l = 22 } |> mainDivsHelper)
+              div [ HA.class "piles-container" ]
                 (List.map (viewPile model) playState.piles)
 
             -- Top
-            , div ({ c = "top-player player-container", w = 100, h = 10, t = 5, l = 0 } |> mainDivsHelper)
+            , div [ HA.class "top-player player-container" ]
                 (getNthRotatedPlayersList 2
                     |> viewPlayer localState playState False False
                 )
 
             -- Right
-            , div ({ c = "right-player player-container", w = 30, h = 15, t = 20, l = 100 } |> mainDivsHelper)
+            , div [ HA.class "right-player player-container" ]
                 (getNthRotatedPlayersList 1
                     |> viewPlayer localState playState False True
                 )
 
             -- Bottom
-            , div ({ c = "bottom-player player-container", w = 55, h = 30, t = 60, l = 22 } |> mainDivsHelper)
+            , div [ HA.class "bottom-player player-container" ]
                 (getNthRotatedPlayersList 0
                     |> viewPlayer localState playState True False
                 )
 
             -- Left
-            , div ({ c = "left-player player-container", w = 30, h = 15, t = 15, l = 5 } |> mainDivsHelper)
+            , div [ HA.class "left-player player-container" ]
                 (getNthRotatedPlayersList 3
                     |> viewPlayer localState playState False True
                 )
@@ -349,8 +350,8 @@ view ({ gameDefinition } as global) ({ playState, localState } as model) =
     }
 
 
-viewPlayer : LocalState -> PlayState -> Bool -> Bool -> List Player -> List (Html Msg)
-viewPlayer localState playState me rotated players =
+viewPlayer : LocalState -> PlayState -> Bool -> Bool -> Maybe Player -> List (Html Msg)
+viewPlayer localState playState me rotated mbPlayer =
     let
         viewCards player =
             case ( me, isMyTurn playState localState ) of
@@ -365,15 +366,8 @@ viewPlayer localState playState me rotated players =
 
         numCards player =
             List.length player.cards
-
-        min a b =
-            if a > b then
-                b
-
-            else
-                a
     in
-    case List.head players of
+    case mbPlayer of
         Just player ->
             [ div
                 [ HA.class "player-name"
@@ -419,17 +413,6 @@ viewPile ({ localState, playState } as model) pile =
         [ Html.div [ HA.class "pile playingCards simpleCards suitTop" ]
             (viewPile_ pile)
         ]
-
-
-mainDivsHelper : { h : Int, l : Int, t : Int, w : Int, c : String } -> List (Attribute msg)
-mainDivsHelper { w, h, t, l, c } =
-    let
-        toPercent i =
-            -- String.fromInt i ++ "%"
-            "50px"
-    in
-    [ HA.class c
-    ]
 
 
 shuffle : { a | numberOfDecks : Int } -> Cmd Msg

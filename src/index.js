@@ -6,6 +6,7 @@ import LZString from 'lz-string';
 import * as firebase from "firebase/app";
 import "firebase/firebase-auth";
 import "firebase/firebase-database";
+import {requestFullScreen} from './full-screen.js'
 
 const getGameId = () => location.pathname.split('/')[1];
 
@@ -153,3 +154,6 @@ const watchPlayers = () => {
 //             succeeded = document.execCommand("copy")
 //         } catch (err) {}
 //     })
+
+// document.addEventListener("DOMContentLoaded", requestFullScreen)
+document.addEventListener("DOMContentLoaded", () => window.scrollTo(0,1))
